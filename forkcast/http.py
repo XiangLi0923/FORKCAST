@@ -18,6 +18,7 @@ from starlette.requests import Request
 from starlette.responses import FileResponse, JSONResponse
 from starlette.routing import Route
 
+from .decision_demo import DemoRequest, demonstrate
 from .demand_insights import DemandAggregationService, DemandInsightsQuery
 from .errors import Fault
 from .models import ID, Model, SnapshotRef
@@ -309,10 +310,19 @@ def create_app(database: Path, mode: str = "SIMULATION", credential: OperatorCre
         ready()
         return FileResponse(WEB_ROOT / "ops.html", media_type="text/html", headers=WEB_HEADERS)
 
+    async def demo_home(_request: Request):
+        return FileResponse(WEB_ROOT / "demo.html", media_type="text/html", headers=WEB_HEADERS)
+
+    async def demo_decision(request: Request):
+        check_origin(request)
+        payload = await parse_json(request, DemoRequest)
+        return JSONResponse({"data": await run_in_threadpool(demonstrate, payload)}, headers=WEB_HEADERS)
+
     async def student_asset(request: Request):
         name = request.path_params["name"]
         assets = {
             "student.css": "text/css", "student.mjs": "text/javascript", "decision_gate.mjs": "text/javascript",
+            "demo.css": "text/css", "demo.mjs": "text/javascript",
             "ops.css": "text/css", "ops.mjs": "text/javascript", "mcp-receipt.mjs": "text/javascript",
         }
         if name not in assets:
@@ -336,6 +346,8 @@ def create_app(database: Path, mode: str = "SIMULATION", credential: OperatorCre
         routes=[
             Route("/", student_home),
             Route("/ops", ops_home),
+            Route("/demo", demo_home),
+            Route("/api/v1/demo/decision", demo_decision, methods=["POST"]),
             Route("/student-assets/{name}", student_asset),
             Route("/health", health),
             Route("/api/v1/runs/current", current),
