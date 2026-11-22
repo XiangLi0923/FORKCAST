@@ -15,14 +15,14 @@ class DecisionDemoTest(unittest.TestCase):
         self.client = self.enterContext(TestClient(create_app(Path(temp) / "demo.sqlite3"),
                                                    base_url="http://localhost"))
 
-    def decision(self, budget=2000, minutes=45, profile="DEFAULT", sold_out=False, dish="D_A_DUCK"):
+    def decision(self, budget=2000, minutes=45, profile="DEFAULT", sold_out=False, dish="D_A_DUCK", stage="CURRENT"):
         preferences = {"profile": profile}
         if dish is not None:
             preferences["requested_dish_id"] = dish
         response = self.client.post("/api/v1/demo/decision", json={
             "request": {"constraints": {"budget_max_cents": budget, "time_budget_min": minutes},
                         "preferences": preferences, "max_options": 4},
-            "duck_sold_out": sold_out,
+            "duck_sold_out": sold_out, "stage": stage,
         })
         self.assertEqual(response.status_code, 200)
         return response.json()["data"]
@@ -36,8 +36,10 @@ class DecisionDemoTest(unittest.TestCase):
 
     def test_budget_and_time_change_search_space(self):
         default = self.decision()
-        self.assertEqual(len(default["candidates"]), 16)
-        self.assertEqual(sum(row["available"] for row in default["candidates"]), 12)
+        self.assertEqual(default["venue_count"], 6)
+        self.assertEqual(len(default["candidates"]), 40)
+        self.assertEqual(len({row["id"] for row in default["candidates"]}), 40)
+        self.assertEqual(sum(row["available"] for row in default["candidates"]), 36)
         self.assertEqual(default["result"]["primary"]["bundle_id"], "B_A_DUCK")
         self.assertEqual(len(default["result"]["alternatives"]), 3)
         budget = self.decision(budget=1500, profile="VALUE")
@@ -59,4 +61,16 @@ class DecisionDemoTest(unittest.TestCase):
         duck = next(row for row in changed["candidates"] if row["dish_id"] == "D_A_DUCK")
         self.assertIn("SOLD_OUT", duck["blocks"])
         self.assertEqual(default, self.decision())
+        self.assertEqual(before, self.client.get(run_path).json())
+
+    def test_next_window_compares_same_conditions_with_and_without_approval(self):
+        run_path = "/api/v1/runs/current"
+        before = self.client.get(run_path).json()
+        no_approval = self.decision(stage="W2_BASE")
+        approved = self.decision(stage="W2_APPROVED")
+        self.assertEqual(no_approval["supply_comparison"]["proposal_portions"], 3)
+        self.assertEqual(no_approval["supply_comparison"]["current_duck_stock"], 0)
+        self.assertEqual(approved["supply_comparison"]["current_duck_stock"], 3)
+        self.assertNotEqual(no_approval["result"]["primary"]["bundle_id"], "B_A_DUCK")
+        self.assertEqual(approved["result"]["primary"]["bundle_id"], "B_A_DUCK")
         self.assertEqual(before, self.client.get(run_path).json())

@@ -1,0 +1,354 @@
+{
+  "venues": [
+    {
+      "venue_id": "V_C",
+      "name": "模拟面食窗口",
+      "location_label": "模拟区 3",
+      "walk_min": {
+        "min": 2,
+        "max": 4
+      },
+      "service_min": {
+        "min": 1,
+        "max": 2
+      },
+      "queue_depth": 6,
+      "throughput_per_min": 3
+    },
+    {
+      "venue_id": "V_D",
+      "name": "模拟家常餐厅",
+      "location_label": "模拟区 4",
+      "walk_min": {
+        "min": 4,
+        "max": 6
+      },
+      "service_min": {
+        "min": 1,
+        "max": 2
+      },
+      "queue_depth": 3,
+      "throughput_per_min": 2
+    },
+    {
+      "venue_id": "V_E",
+      "name": "模拟风味餐厅",
+      "location_label": "模拟区 5",
+      "walk_min": {
+        "min": 5,
+        "max": 7
+      },
+      "service_min": {
+        "min": 2,
+        "max": 3
+      },
+      "queue_depth": 4,
+      "throughput_per_min": 2
+    },
+    {
+      "venue_id": "V_F",
+      "name": "模拟清淡餐厅",
+      "location_label": "模拟区 6",
+      "walk_min": {
+        "min": 3,
+        "max": 5
+      },
+      "service_min": {
+        "min": 1,
+        "max": 2
+      },
+      "queue_depth": 1,
+      "throughput_per_min": 2
+    }
+  ],
+  "dishes": [
+    {
+      "venue_id": "V_C",
+      "dish_id": "D_C_SCALLION",
+      "name": "小葱拌面",
+      "family_id": "noodles",
+      "tag": "light",
+      "price_cents": 900,
+      "w1": 8,
+      "w2": 8,
+      "ingredients": null,
+      "active": true
+    },
+    {
+      "venue_id": "V_C",
+      "dish_id": "D_C_MUSHROOM",
+      "name": "香菇汤面",
+      "family_id": "noodles",
+      "tag": "light",
+      "price_cents": 1200,
+      "w1": 8,
+      "w2": 8,
+      "ingredients": null,
+      "active": true
+    },
+    {
+      "venue_id": "V_C",
+      "dish_id": "D_C_PEPPER",
+      "name": "青椒肉丝饭",
+      "family_id": "pork_rice",
+      "tag": "rice",
+      "price_cents": 1400,
+      "w1": 8,
+      "w2": 8,
+      "ingredients": null,
+      "active": true
+    },
+    {
+      "venue_id": "V_C",
+      "dish_id": "D_C_PUMPKIN",
+      "name": "南瓜杂粮饭",
+      "family_id": "vegetable_rice",
+      "tag": "rice",
+      "price_cents": 1050,
+      "w1": 8,
+      "w2": 8,
+      "ingredients": null,
+      "active": true
+    },
+    {
+      "venue_id": "V_C",
+      "dish_id": "D_C_BEEF",
+      "name": "清汤牛肉面",
+      "family_id": "noodles",
+      "tag": "light",
+      "price_cents": 1650,
+      "w1": 8,
+      "w2": 8,
+      "ingredients": null,
+      "active": true
+    },
+    {
+      "venue_id": "V_C",
+      "dish_id": "D_C_EGG",
+      "name": "番茄鸡蛋面",
+      "family_id": "noodles",
+      "tag": "light",
+      "price_cents": 1150,
+      "w1": 8,
+      "w2": 8,
+      "ingredients": null,
+      "active": true
+    },
+    {
+      "venue_id": "V_D",
+      "dish_id": "D_D_TOFU",
+      "name": "香菇豆腐饭",
+      "family_id": "tofu_rice",
+      "tag": "rice",
+      "price_cents": 1150,
+      "w1": 8,
+      "w2": 8,
+      "ingredients": null,
+      "active": true
+    },
+    {
+      "venue_id": "V_D",
+      "dish_id": "D_D_CHICKEN",
+      "name": "香菇鸡肉饭",
+      "family_id": "chicken_rice",
+      "tag": "rice",
+      "price_cents": 1450,
+      "w1": 8,
+      "w2": 8,
+      "ingredients": null,
+      "active": true
+    },
+    {
+      "venue_id": "V_D",
+      "dish_id": "D_D_EGG",
+      "name": "菌菇鸡蛋盖饭",
+      "family_id": "egg_rice",
+      "tag": "rice",
+      "price_cents": 1150,
+      "w1": 8,
+      "w2": 8,
+      "ingredients": null,
+      "active": true
+    },
+    {
+      "venue_id": "V_D",
+      "dish_id": "D_D_VEG",
+      "name": "青菜杂粮饭",
+      "family_id": "vegetable_rice",
+      "tag": "light",
+      "price_cents": 1100,
+      "w1": 8,
+      "w2": 8,
+      "ingredients": null,
+      "active": true
+    },
+    {
+      "venue_id": "V_D",
+      "dish_id": "D_D_PORK",
+      "name": "土豆烧肉饭",
+      "family_id": "pork_rice",
+      "tag": "rice",
+      "price_cents": 1500,
+      "w1": 8,
+      "w2": 8,
+      "ingredients": null,
+      "active": true
+    },
+    {
+      "venue_id": "V_D",
+      "dish_id": "D_D_FISH",
+      "name": "豆豉鱼饭",
+      "family_id": "fish_rice",
+      "tag": "rice",
+      "price_cents": 1750,
+      "w1": 8,
+      "w2": 8,
+      "ingredients": null,
+      "active": true
+    },
+    {
+      "venue_id": "V_E",
+      "dish_id": "D_E_BEEF",
+      "name": "孜然牛肉饭",
+      "family_id": "beef_rice",
+      "tag": "rice",
+      "price_cents": 1800,
+      "w1": 8,
+      "w2": 8,
+      "ingredients": null,
+      "active": true
+    },
+    {
+      "venue_id": "V_E",
+      "dish_id": "D_E_CHICKEN",
+      "name": "椒香鸡肉饭",
+      "family_id": "chicken_rice",
+      "tag": "rice",
+      "price_cents": 1550,
+      "w1": 8,
+      "w2": 8,
+      "ingredients": null,
+      "active": true
+    },
+    {
+      "venue_id": "V_E",
+      "dish_id": "D_E_VEG",
+      "name": "凉拌荞麦面",
+      "family_id": "noodles",
+      "tag": "light",
+      "price_cents": 1200,
+      "w1": 8,
+      "w2": 8,
+      "ingredients": null,
+      "active": true
+    },
+    {
+      "venue_id": "V_E",
+      "dish_id": "D_E_TOFU",
+      "name": "青椒豆腐拌饭",
+      "family_id": "tofu_rice",
+      "tag": "rice",
+      "price_cents": 1100,
+      "w1": 8,
+      "w2": 8,
+      "ingredients": null,
+      "active": true
+    },
+    {
+      "venue_id": "V_E",
+      "dish_id": "D_E_EGG",
+      "name": "葱香鸡蛋饭",
+      "family_id": "egg_rice",
+      "tag": "rice",
+      "price_cents": 1050,
+      "w1": 8,
+      "w2": 8,
+      "ingredients": null,
+      "active": true
+    },
+    {
+      "venue_id": "V_E",
+      "dish_id": "D_E_MUSHROOM",
+      "name": "菌菇米线",
+      "family_id": "noodles",
+      "tag": "light",
+      "price_cents": 1300,
+      "w1": 8,
+      "w2": 8,
+      "ingredients": null,
+      "active": true
+    },
+    {
+      "venue_id": "V_F",
+      "dish_id": "D_F_TOFU",
+      "name": "白菜豆腐饭",
+      "family_id": "tofu_rice",
+      "tag": "light",
+      "price_cents": 1000,
+      "w1": 8,
+      "w2": 8,
+      "ingredients": null,
+      "active": true
+    },
+    {
+      "venue_id": "V_F",
+      "dish_id": "D_F_CHICKEN",
+      "name": "清蒸鸡肉饭",
+      "family_id": "chicken_rice",
+      "tag": "light",
+      "price_cents": 1500,
+      "w1": 8,
+      "w2": 8,
+      "ingredients": null,
+      "active": true
+    },
+    {
+      "venue_id": "V_F",
+      "dish_id": "D_F_FISH",
+      "name": "清蒸鱼饭",
+      "family_id": "fish_rice",
+      "tag": "light",
+      "price_cents": 1700,
+      "w1": 8,
+      "w2": 8,
+      "ingredients": null,
+      "active": true
+    },
+    {
+      "venue_id": "V_F",
+      "dish_id": "D_F_VEG",
+      "name": "胡萝卜玉米饭",
+      "family_id": "vegetable_rice",
+      "tag": "light",
+      "price_cents": 1050,
+      "w1": 8,
+      "w2": 8,
+      "ingredients": null,
+      "active": true
+    },
+    {
+      "venue_id": "V_F",
+      "dish_id": "D_F_EGG",
+      "name": "鸡蛋玉米饭",
+      "family_id": "egg_rice",
+      "tag": "light",
+      "price_cents": 1200,
+      "w1": 8,
+      "w2": 8,
+      "ingredients": null,
+      "active": true
+    },
+    {
+      "venue_id": "V_F",
+      "dish_id": "D_F_NOODLE",
+      "name": "青菜汤面",
+      "family_id": "noodles",
+      "tag": "light",
+      "price_cents": 950,
+      "w1": 8,
+      "w2": 8,
+      "ingredients": null,
+      "active": true
+    }
+  ]
+}

@@ -16,21 +16,24 @@
   <main class="demo">
     <section class="demo-intro">
       <p class="mode">赛后体验更新 · 模拟校园数据</p>
-      <h1>今天中午，为什么推荐这份饭？</h1>
-      <p>改预算、时间或想吃的菜，查看哪些餐次被排除、哪些进入排序。这里使用与学生端相同的推荐引擎，演示操作独立于学生与运营端。</p>
+      <h1>四十份午餐，怎么选出今天这一份？</h1>
+      <p>从六处模拟食堂挑出符合预算、时间和口味的一餐。你可以查看每个候选为什么入选，也可以模拟售罄，再对照批准备餐怎样改变下一轮推荐。</p>
     </section>
     <section class="panel" aria-labelledby="experiment">
-      <h2 id="experiment">试试三个午餐情境</h2>
+      <h2 id="experiment">试试四个午餐情境</h2>
       <div class="presets">
         <button type="button" class="button secondary" data-preset="duck">想吃烤鸭饭</button>
         <button type="button" class="button secondary" data-preset="budget">预算只有 ¥15</button>
         <button type="button" class="button secondary" data-preset="fast">只剩 20 分钟</button>
+        <button type="button" class="button secondary" data-preset="explore">最近常吃面，想换口味</button>
       </div>
       <form id="experiment-form">
         <label>预算上限（元）<input id="budget" type="number" min="0" max="1000" step="0.01" value="20" required></label>
-        <label>用餐时间上限（分钟）<input id="minutes" type="number" min="0" max="200" value="45" required></label>
+        <label>用餐时间上限（分钟）<input id="minutes" type="number" min="0" max="180" value="45" required></label>
         <label>想吃的菜<select id="dish"><option value="">没有指定</option></select></label>
         <label>排序偏好<select id="profile"><option value="DEFAULT">综合推荐</option><option value="FAST">赶时间</option><option value="VALUE">控预算</option><option value="EXPLORE">探索新口味</option></select></label>
+        <label>口味<select id="taste"><option value="">不限口味</option><option value="light">偏清淡</option><option value="rice">想吃米饭</option></select></label>
+        <label>最近常吃<select id="recent-family"><option value="">没有指定</option><option value="duck_rice">烤鸭饭</option><option value="chicken_rice">鸡肉饭</option><option value="noodles">面食</option><option value="tofu_rice">豆腐饭</option></select></label>
         <label class="demo-checkbox"><input id="sold-out" type="checkbox">模拟烤鸭饭售罄</label>
         <button class="button primary" type="submit">重新计算</button>
       </form>
@@ -43,13 +46,23 @@
     </section>
     <details class="panel" id="trace">
       <summary>查看全部候选及淘汰原因</summary>
+      <label>筛选候选<input id="candidate-filter" type="search" placeholder="搜餐次或食堂"></label>
       <div class="trace-table" tabindex="0" aria-label="候选餐次比较表">
         <table><thead><tr><th>餐次</th><th>价格</th><th>排队</th><th>总耗时</th><th>匹配分或未入选原因</th></tr></thead><tbody id="trace-body"></tbody></table>
       </div>
     </details>
     <section class="panel demo-next">
       <h2>看看食堂如何改变下一轮推荐</h2>
-      <p>原比赛场景可在学生端表达并授权需求，在运营端审批备餐，然后从学生端查看下一供餐窗的变化。</p>
+      <p>这里对照同一组模拟需求下的两条路径。备餐量由资源与需求规则计算，以下操作只切换本次演示的供应快照。</p>
+      <p id="supply-detail" role="status"></p>
+      <fieldset id="stage-controls">
+        <legend>选择要比较的供应快照</legend>
+        <label><input type="radio" name="stage" value="CURRENT" checked> 本窗口</label>
+        <label><input type="radio" name="stage" value="W2_BASE"> 下一窗口 · 未批准备餐</label>
+        <label><input type="radio" name="stage" value="W2_APPROVED"> 下一窗口 · 已批准备餐</label>
+      </fieldset>
+      <a href="#result-title">返回推荐结果 ↑</a>
+      <p>如需实际操作授权、人工审批和审计，可打开原比赛闭环。</p>
       <a class="button secondary" href="/">原闭环 · 学生端</a>
       <a class="button secondary" href="/ops">原闭环 · 运营端</a>
     </section>

@@ -18,3 +18,6 @@
 .trace-table td, .trace-table th {padding: .45rem; border-bottom: 1px solid #d3ded7;}
 .demo-next a {margin: .25rem .3rem .25rem 0;}
 .demo summary, .demo button {cursor: pointer;}
+#stage-controls {display: flex; flex-wrap: wrap; gap: .7rem; margin: 1rem 0;}
+#stage-controls label {padding: .5rem .7rem; border: 1px solid #d3ded7; border-radius: .5rem;}
+#candidate-filter {display: block; max-width: 20rem; margin: .3rem 0 .5rem;}
