@@ -18,6 +18,15 @@ const money = cents => cents == null ? "未知" : "¥" + (cents / 100).toFixed(2
 const minutes = range => range ? range.min + "–" + range.max + " 分钟" : "未知";
 let pending;
 let fullTrace = [];
+let chosen = null;
+let opsPending;
+let guideStep = -1;
+const guide = [
+  {title: "选一份午餐", text: "试试烤鸭饭，点卡片上的「就选这份」。想选其他餐次也可以。", target: "#results .choose-meal"},
+  {title: "切到食堂视角", text: "共享由你决定。点「梳理需求数据」，查看想吃、打算去吃和实际吃过三类信号。", target: "#summarize"},
+  {title: "得出备餐方案", text: "点「生成备餐方案」，看看缺口、原料和产能如何决定可追加份数。", target: "#generate-plan"},
+  {title: "完成双端体验", text: "已选好一餐，也拿到了备餐方案。还可以模拟批准，查看下一窗的供给与推荐。", target: "#show-approved"},
+];
 const stageValue = () => document.querySelector('[name="stage"]:checked').value;
 const stageExplanation = {
   CURRENT: "当前供餐窗口",
@@ -34,6 +43,7 @@ function node(tag, value) {
 function card(candidate, rank) {
   const el = node("article");
   el.className = "demo-card";
+  if (rank === "首选") el.classList.add("featured-card");
   el.append(node("small", rank), node("h3", candidate.name),
     node("p", candidate.venue + " · " + money(candidate.price_cents)),
     node("p", "排队 " + minutes(candidate.queue) + " · 全程 " + minutes(candidate.time)),
@@ -45,7 +55,13 @@ function card(candidate, rank) {
       + (factor.estimated ? "（缺少偏好或事实，按中性值）" : "")));
   }
   details.append(node("summary", "查看分项"), list);
-  el.append(details);
+  const choose = node("button", chosen?.id === candidate.id ? "已选这份" : "就选这份");
+  choose.type = "button";
+  choose.className = "choose-meal";
+  choose.dataset.meal = candidate.id;
+  choose.setAttribute("aria-pressed", String(chosen?.id === candidate.id));
+  choose.addEventListener("click", () => chooseMeal(candidate));
+  el.append(choose, details);
   return el;
 }
 
@@ -58,8 +74,9 @@ function show(data) {
   const eligible = candidates.filter(row => row.score !== null);
   const byId = new Map(candidates.map(row => [row.id, row]));
   const select = get("dish");
-  if (select.options.length === 1) {
-    for (const row of candidates) select.add(new Option(row.name, row.dish_id));
+  const known = new Set(Array.from(select.options, option => option.value));
+  for (const row of candidates) {
+    if (!known.has(row.dish_id)) select.add(new Option(row.name, row.dish_id));
   }
   get("demo-status").textContent = [
     stageExplanation[data.stage],
@@ -91,6 +108,7 @@ function show(data) {
   }
   fullTrace = candidates;
   showTrace();
+  highlight();
 }
 
 function showTrace() {
@@ -122,6 +140,7 @@ async function refresh() {
     max_options: 4,
   };
   get("demo-status").textContent = "正在重新计算…";
+  for (const button of document.querySelectorAll(".choose-meal")) button.disabled = true;
   try {
     const response = await fetch("/api/v1/demo/decision", {
       method: "POST", headers: {"Content-Type": "application/json"}, signal: controller.signal,
@@ -143,20 +162,167 @@ get("experiment-form").addEventListener("submit", event => {
   event.preventDefault();
   refresh();
 });
-document.querySelectorAll("[data-preset]").forEach(button => button.addEventListener("click", () => {
-  const preset = presets[button.dataset.preset];
-  for (const [id, value] of Object.entries(preset)) get(id).value = value;
+function usePreset(key) {
+  const preset = presets[key];
+  for (const [id, value] of Object.entries(preset)) {
+    if (id === "dish" && value && !Array.from(get(id).options).some(option => option.value === value)) {
+      get(id).add(new Option("烤鸭饭", value));
+    }
+    get(id).value = value;
+  }
+  for (const button of document.querySelectorAll("[data-preset]")) {
+    button.setAttribute("aria-pressed", String(button.dataset.preset === key));
+  }
   get("sold-out").checked = false;
   get("sold-out").disabled = false;
   get("taste").value = "";
-  get("recent-family").value = button.dataset.preset === "explore" ? "noodles" : "";
+  get("recent-family").value = key === "explore" ? "noodles" : "";
   document.querySelector('[name="stage"][value="CURRENT"]').checked = true;
-  get("experiment-form").requestSubmit();
-}));
+  return refresh();
+}
+document.querySelectorAll("[data-preset]").forEach(button =>
+  button.addEventListener("click", () => usePreset(button.dataset.preset)));
 get("candidate-filter").addEventListener("input", showTrace);
 get("stage-controls").addEventListener("change", () => {
   get("sold-out").disabled = stageValue() !== "CURRENT";
   get("experiment-form").requestSubmit();
 });
 get("sold-out").addEventListener("change", () => get("experiment-form").requestSubmit());
+
+function highlight() {
+  document.querySelector(".guide-target")?.classList.remove("guide-target");
+  if (guideStep >= 0) document.querySelector(guide[guideStep].target)?.classList.add("guide-target");
+}
+
+function setGuide(step) {
+  guideStep = step;
+  get("coach").hidden = step < 0;
+  if (step < 0) {
+    highlight();
+    return;
+  }
+  get("coach-title").textContent = guide[step].title;
+  get("coach-text").textContent = guide[step].text;
+  get("coach-progress").textContent = step === 3 ? "完成 ✓" : "第 " + (step + 1) + " / 3 步";
+  highlight();
+}
+
+function locateGuide() {
+  if (guideStep < 0) return;
+  const target = document.querySelector(guide[guideStep].target) ||
+    get(guideStep === 0 ? "student-stop" : "ops-stop");
+  target.scrollIntoView({block: "center"});
+  if (target instanceof HTMLButtonElement && !target.disabled) target.focus({preventScroll: true});
+}
+
+function clearOps() {
+  opsPending?.abort();
+  opsPending = null;
+  get("signals").hidden = true;
+  get("generate-plan").hidden = true;
+  get("generate-plan").disabled = false;
+  get("plan-output").hidden = true;
+  get("summarize").disabled = !chosen;
+  get("ops-demo-status").textContent = chosen ? "已选 " + chosen.name + "。可以开始梳理需求。" : "请先在学生视角选一餐。";
+}
+
+function chooseMeal(candidate) {
+  chosen = candidate;
+  get("selection-receipt").hidden = false;
+  get("chosen-label").textContent = "你选了 " + candidate.name;
+  get("share-intent").checked = false;
+  get("share-intent").disabled = candidate.dish_id !== "D_A_DUCK";
+  get("share-label").textContent = candidate.dish_id === "D_A_DUCK"
+    ? " 将本次烤鸭饭意向纳入模拟汇总" : " 此演示仅汇总烤鸭饭意向";
+  for (const button of document.querySelectorAll(".choose-meal")) {
+    const selected = button.dataset.meal === candidate.id;
+    button.setAttribute("aria-pressed", String(selected));
+    button.textContent = selected ? "已选这份" : "就选这份";
+  }
+  clearOps();
+  if (guideStep >= 0) setGuide(1);
+  if (!get("share-intent").disabled) get("share-intent").focus({preventScroll: true});
+}
+
+function showSignals(data) {
+  const entries = [["想吃", data.signals.preference], ["打算去吃", data.signals.intent], ["自报吃过", data.signals.reported_meal]];
+  get("signals").replaceChildren(...entries.map(([label, count]) => {
+    const box = node("div");
+    box.append(node("span", label), node("strong", count ?? "未披露"));
+    return box;
+  }));
+  get("signals").hidden = false;
+  get("ops-demo-status").textContent = data.included
+    ? "本次烤鸭饭选择已纳入模拟意向。"
+    : "当前汇总使用预设的模拟烤鸭饭数据。";
+}
+
+function showPlan(plan) {
+  const name = node("span", "建议追加");
+  const portions = node("strong", String(plan.feasible_extra_portions ?? 0) + " 份");
+  get("plan-head").replaceChildren(name, portions);
+  const constraint = plan.evidence_codes.includes("INGREDIENT_LIMIT") ? "原料是本次追加量的限制。" : "";
+  get("plan-note").textContent = "估计需求 " + plan.demand_proxy_portions + " 份，已计划 " + plan.planned_supply_portions
+    + " 份，缺口 " + plan.shortage_portions + " 份。" + constraint;
+  get("plan-output").hidden = false;
+  get("plan-output").focus({preventScroll: true});
+}
+
+async function operations(action) {
+  if (!chosen || opsPending) return;
+  const controller = new AbortController();
+  opsPending = controller;
+  get("summarize").disabled = get("generate-plan").disabled = true;
+  get("ops-demo-status").textContent = "正在计算…";
+  try {
+    const response = await fetch("/api/v1/demo/operations", {
+      method: "POST", headers: {"Content-Type": "application/json"}, signal: controller.signal,
+      body: JSON.stringify({action, chosen_dish_id: chosen.dish_id, share_intent: get("share-intent").checked}),
+    });
+    if (!response.ok) throw new Error("operations request failed");
+    const {data} = await response.json();
+    if (opsPending !== controller) return;
+    showSignals(data);
+    get("generate-plan").hidden = false;
+    if (action === "PLAN") showPlan(data.plan);
+    if (guideStep >= 0) setGuide(action === "PLAN" ? 3 : 2);
+  } catch (error) {
+    if (!controller.signal.aborted) get("ops-demo-status").textContent = "暂时无法读取，请重试。";
+  } finally {
+    if (opsPending === controller) {
+      opsPending = null;
+      get("summarize").disabled = get("generate-plan").disabled = false;
+    }
+  }
+}
+
+get("start-guide").addEventListener("click", async () => {
+  setGuide(0);
+  get("student-stop").scrollIntoView();
+  await usePreset("duck");
+  if (guideStep === 0) locateGuide();
+});
+get("coach-close").addEventListener("click", () => {
+  const target = document.querySelector(guide[guideStep]?.target ?? "#start-guide");
+  setGuide(-1);
+  (target ?? get("start-guide")).focus();
+});
+get("coach-jump").addEventListener("click", locateGuide);
+get("share-intent").addEventListener("change", () => {
+  clearOps();
+  if (guideStep > 1) setGuide(1);
+});
+get("summarize").addEventListener("click", () => operations("SUMMARIZE"));
+get("generate-plan").addEventListener("click", () => operations("PLAN"));
+get("show-approved").addEventListener("click", async () => {
+  get("comparison").open = true;
+  document.querySelector('[name="stage"][value="W2_APPROVED"]').checked = true;
+  get("sold-out").disabled = true;
+  if (!get("experiment-form").reportValidity()) {
+    get("experiment-form").closest("details").open = true;
+    return;
+  }
+  await refresh();
+  get("comparison").scrollIntoView({block: "center"});
+});
 refresh();

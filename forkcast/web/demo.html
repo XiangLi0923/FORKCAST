@@ -3,69 +3,108 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="theme-color" content="#18362c">
   <title>FORKCAST 食序 · 午餐决策演示</title>
   <link rel="stylesheet" href="/student-assets/student.css">
   <link rel="stylesheet" href="/student-assets/demo.css">
   <script type="module" src="/student-assets/demo.mjs"></script>
 </head>
-<body>
-  <header class="top">
+<body class="demo-page">
+  <a class="skip" href="#student-stop">跳到学生体验</a>
+  <header class="top demo-nav">
     <a class="brand" href="/"><b>FORKCAST</b><span>食序</span></a>
-    <nav aria-label="演示导航"><a href="/">学生端</a><a href="/ops">食堂运营端</a></nav>
+    <nav aria-label="演示导航"><a href="#student-stop">学生体验</a><a href="#ops-stop">运营体验</a><a href="/ops">完整运营端 ↗</a></nav>
   </header>
   <main class="demo">
-    <section class="demo-intro">
-      <p class="mode">赛后体验更新 · 模拟校园数据</p>
-      <h1>四十份午餐，怎么选出今天这一份？</h1>
-      <p>从六处模拟食堂挑出符合预算、时间和口味的一餐。你可以查看每个候选为什么入选，也可以模拟售罄，再对照批准备餐怎样改变下一轮推荐。</p>
-    </section>
-    <section class="panel" aria-labelledby="experiment">
-      <h2 id="experiment">试试四个午餐情境</h2>
-      <div class="presets">
-        <button type="button" class="button secondary" data-preset="duck">想吃烤鸭饭</button>
-        <button type="button" class="button secondary" data-preset="budget">预算只有 ¥15</button>
-        <button type="button" class="button secondary" data-preset="fast">只剩 20 分钟</button>
-        <button type="button" class="button secondary" data-preset="explore">最近常吃面，想换口味</button>
+    <section class="demo-intro" aria-labelledby="demo-title">
+      <div class="hero-copy-demo">
+        <p class="hero-label">食序午餐实验室 · 模拟校园</p>
+        <h1 id="demo-title">这一餐，<br>选得有理由。</h1>
+        <p class="hero-lead">学生快一点决定午餐，食堂早一步备好下一餐。亲手选一次，再到食堂视角看需求如何变成备餐方案。</p>
+        <div class="hero-actions-demo">
+          <button id="start-guide" class="demo-cta" type="button">开始两分钟导览 <span aria-hidden="true">↗</span></button>
+          <a href="#student-stop">自由体验 <span aria-hidden="true">↓</span></a>
+        </div>
       </div>
-      <form id="experiment-form">
-        <label>预算上限（元）<input id="budget" type="number" min="0" max="1000" step="0.01" value="20" required></label>
-        <label>用餐时间上限（分钟）<input id="minutes" type="number" min="0" max="180" value="45" required></label>
-        <label>想吃的菜<select id="dish"><option value="">没有指定</option></select></label>
-        <label>排序偏好<select id="profile"><option value="DEFAULT">综合推荐</option><option value="FAST">赶时间</option><option value="VALUE">控预算</option><option value="EXPLORE">探索新口味</option></select></label>
-        <label>口味<select id="taste"><option value="">不限口味</option><option value="light">偏清淡</option><option value="rice">想吃米饭</option></select></label>
-        <label>最近常吃<select id="recent-family"><option value="">没有指定</option><option value="duck_rice">烤鸭饭</option><option value="chicken_rice">鸡肉饭</option><option value="noodles">面食</option><option value="tofu_rice">豆腐饭</option></select></label>
-        <label class="demo-checkbox"><input id="sold-out" type="checkbox">模拟烤鸭饭售罄</label>
-        <button class="button primary" type="submit">重新计算</button>
-      </form>
+      <div class="hero-photo" role="img" aria-label="烤鸭饭示意，图片为视觉呈现"></div>
     </section>
-    <p id="demo-status" role="status">正在读取推荐结果…</p>
-    <section aria-labelledby="result-title">
-      <h2 id="result-title">推荐结果</h2>
-      <p id="explanation"></p>
+    <aside class="coach" id="coach" hidden aria-label="演示导览">
+      <div class="coach-progress" id="coach-progress"></div>
+      <div class="coach-copy"><strong id="coach-title"></strong><p id="coach-text" role="status"></p></div>
+      <button id="coach-jump" class="demo-cta" type="button">定位当前动作 <span aria-hidden="true">↘</span></button>
+      <button id="coach-close" class="quiet-button" type="button">退出导览</button>
+    </aside>
+    <section id="student-stop" aria-labelledby="result-title">
+      <div class="chapter"><span>01</span><div><p>学生视角</p><h2 id="result-title">选一份今天的午餐</h2></div></div>
+      <div class="preset-bar">
+        <div class="presets" aria-label="快捷情境">
+          <button type="button" class="demo-chip" data-preset="duck">想吃烤鸭饭</button>
+          <button type="button" class="demo-chip" data-preset="budget">预算只有 ¥15</button>
+          <button type="button" class="demo-chip" data-preset="fast">只剩 20 分钟</button>
+          <button type="button" class="demo-chip" data-preset="explore">最近常吃面，想换口味</button>
+        </div>
+        <details class="demo-controls">
+          <summary>自定义条件</summary>
+          <form id="experiment-form">
+            <label>预算上限（元）<input id="budget" type="number" min="0" max="1000" step="0.01" value="20" required></label>
+            <label>用餐时间上限（分钟）<input id="minutes" type="number" min="0" max="180" value="45" required></label>
+            <label>想吃的菜<select id="dish"><option value="">没有指定</option></select></label>
+            <label>排序偏好<select id="profile"><option value="DEFAULT">综合推荐</option><option value="FAST">赶时间</option><option value="VALUE">控预算</option><option value="EXPLORE">探索新口味</option></select></label>
+            <label>口味<select id="taste"><option value="">不限口味</option><option value="light">偏清淡</option><option value="rice">想吃米饭</option></select></label>
+            <label>最近常吃<select id="recent-family"><option value="">没有指定</option><option value="duck_rice">烤鸭饭</option><option value="chicken_rice">鸡肉饭</option><option value="noodles">面食</option><option value="tofu_rice">豆腐饭</option></select></label>
+            <label class="demo-checkbox"><input id="sold-out" type="checkbox">模拟烤鸭饭售罄</label>
+            <button class="demo-chip" type="submit">重新计算</button>
+          </form>
+        </details>
+      </div>
+      <p id="demo-status" class="demo-status" role="status">正在读取推荐结果…</p>
+      <p id="explanation" class="decision-note"></p>
       <div id="results" class="demo-cards"></div>
-    </section>
-    <details class="panel" id="trace">
-      <summary>查看全部候选及淘汰原因</summary>
-      <label>筛选候选<input id="candidate-filter" type="search" placeholder="搜餐次或食堂"></label>
-      <div class="trace-table" tabindex="0" aria-label="候选餐次比较表">
-        <table><thead><tr><th>餐次</th><th>价格</th><th>排队</th><th>总耗时</th><th>匹配分或未入选原因</th></tr></thead><tbody id="trace-body"></tbody></table>
+      <div id="selection-receipt" class="selection-receipt" hidden>
+        <div><b id="chosen-label"></b><p>已记录本次选餐意向，未下单。</p></div>
+        <label for="share-intent"><input id="share-intent" type="checkbox"><span id="share-label"> 将本次烤鸭饭意向纳入模拟汇总</span></label>
+        <a href="#ops-stop" class="demo-chip">去运营视角 ↓</a>
       </div>
-    </details>
-    <section class="panel demo-next">
-      <h2>看看食堂如何改变下一轮推荐</h2>
-      <p>这里对照同一组模拟需求下的两条路径。备餐量由资源与需求规则计算，以下操作只切换本次演示的供应快照。</p>
-      <p id="supply-detail" role="status"></p>
-      <fieldset id="stage-controls">
-        <legend>选择要比较的供应快照</legend>
-        <label><input type="radio" name="stage" value="CURRENT" checked> 本窗口</label>
-        <label><input type="radio" name="stage" value="W2_BASE"> 下一窗口 · 未批准备餐</label>
-        <label><input type="radio" name="stage" value="W2_APPROVED"> 下一窗口 · 已批准备餐</label>
-      </fieldset>
-      <a href="#result-title">返回推荐结果 ↑</a>
-      <p>如需实际操作授权、人工审批和审计，可打开原比赛闭环。</p>
-      <a class="button secondary" href="/">原闭环 · 学生端</a>
-      <a class="button secondary" href="/ops">原闭环 · 运营端</a>
+      <details class="panel trace-panel" id="trace">
+        <summary>查看全部候选及淘汰原因</summary>
+        <label>筛选候选<input id="candidate-filter" type="search" placeholder="搜餐次或食堂"></label>
+        <div class="trace-table" tabindex="0" aria-label="候选餐次比较表">
+          <table><thead><tr><th>餐次</th><th>价格</th><th>排队</th><th>总耗时</th><th>匹配分或未入选原因</th></tr></thead><tbody id="trace-body"></tbody></table>
+        </div>
+      </details>
     </section>
+    <section id="ops-stop" aria-labelledby="ops-demo-title">
+      <div class="chapter"><span>02</span><div><p>食堂视角</p><h2 id="ops-demo-title">把需求变成备餐方案</h2></div></div>
+      <div class="ops-demo-panel">
+        <div class="ops-side">
+          <h3>下一窗口 · 烤鸭饭</h3>
+          <p>先梳理三类模拟需求，再用当前供给、产能和原料算出能追加多少份。</p>
+          <button class="demo-cta" type="button" id="summarize" disabled>梳理需求数据 <span aria-hidden="true">↗</span></button>
+          <p id="ops-demo-status" role="status">请先在学生视角选一餐。</p>
+        </div>
+        <div class="ops-work">
+          <div id="signals" class="demand-stats" hidden></div>
+          <button class="demo-chip" type="button" id="generate-plan" hidden>生成备餐方案 <span aria-hidden="true">→</span></button>
+          <div id="plan-output" class="plan-output" hidden tabindex="-1">
+            <div id="plan-head"></div>
+            <p id="plan-note"></p>
+            <button class="demo-chip" type="button" id="show-approved">模拟批准并查看下一窗 <span aria-hidden="true">→</span></button>
+          </div>
+        </div>
+      </div>
+      <details class="panel comparison-panel" id="comparison">
+        <summary>比较当前与下一供应窗口</summary>
+        <p id="supply-detail" role="status"></p>
+        <fieldset id="stage-controls">
+          <legend class="visually-hidden">选择要比较的供应快照</legend>
+          <label><input type="radio" name="stage" value="CURRENT" checked> 本窗口</label>
+          <label><input type="radio" name="stage" value="W2_BASE"> 下一窗 · 未批准</label>
+          <label><input type="radio" name="stage" value="W2_APPROVED"> 下一窗 · 已批准</label>
+        </fieldset>
+        <a href="#result-title">回看推荐结果 ↑</a>
+      </details>
+    </section>
+    <footer class="demo-footer"><b>FORKCAST · 食序</b><p>赛后体验更新 · 40 份模拟餐次。演示选择与备餐方案仅在此页体验。</p><a href="/ops">打开完整运营端 ↗</a></footer>
   </main>
 </body>
 </html>

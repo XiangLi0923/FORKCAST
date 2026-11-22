@@ -8,8 +8,9 @@ from .decision_engine import evaluate
 from .decision_models import DecisionInput, DecisionRequest
 from .decision_ranking import NEAR_OPTIMAL
 from .demand_insights import DemandInsight, DemandVisibility, MIN_VISIBLE_SUBJECTS
+from .errors import Fault
 from .fixture import FixtureDish, FixtureVenue, load_fixture
-from .models import AdvanceClock, Model, SimulationEvent, SoldOut
+from .models import ID, AdvanceClock, Model, SimulationEvent, SoldOut
 from .ops_analysis import analyze_supply
 from .ops_execution import reserve
 from .simulator import Simulator
@@ -19,6 +20,12 @@ class DemoRequest(Model):
     request: DecisionRequest
     duck_sold_out: bool = False
     stage: Literal["CURRENT", "W2_BASE", "W2_APPROVED"] = "CURRENT"
+
+
+class DemoOperationsRequest(Model):
+    action: Literal["SUMMARIZE", "PLAN"]
+    chosen_dish_id: ID
+    share_intent: bool = False
 
 
 class ExplorationMenu(Model):
@@ -80,11 +87,11 @@ def _demo():
         sequence=0, event_type="SET_SOLD_OUT", target_id=seed.dish_id, payload=SoldOut(dish_id=seed.dish_id),
     )
     sold_out = simulator.transition(current, sale, ())[0].supply
-    return fixture.catalog(scenario), stages, sold_out, demand, analysis
+    return fixture.catalog(scenario), stages, sold_out, demand, analysis, (plan, prep, ingredient)
 
 
 def demonstrate(payload: DemoRequest) -> dict:
-    catalog, stages, sold_out, demand, analysis = _demo()
+    catalog, stages, sold_out, demand, analysis, _ = _demo()
     snapshot, window = stages[payload.stage]
     if payload.stage == "CURRENT" and payload.duck_sold_out:
         snapshot = sold_out
@@ -126,3 +133,27 @@ def demonstrate(payload: DemoRequest) -> dict:
             "current_duck_stock": supply[demand.dish_id].stock_portions.value,
         },
     }
+
+
+def demonstrate_operations(payload: DemoOperationsRequest) -> dict:
+    """Calculate a rehearsal summary and plan without writing to the contest run."""
+    catalog, _, _, demand, _, resources = _demo()
+    dishes = {row.dish_id: row for row in catalog.dishes}
+    if payload.chosen_dish_id not in dishes:
+        raise Fault("INVALID_INPUT", "Unknown demo dish.")
+    counts_toward_duck = payload.share_intent and payload.chosen_dish_id == demand.dish_id
+    if counts_toward_duck:
+        demand = demand.model_copy(update={"intended_sessions": demand.intended_sessions + 1})
+    data = {
+        "dish": dishes[demand.dish_id].name.value,
+        "chosen_dish": dishes[payload.chosen_dish_id].name.value,
+        "included": counts_toward_duck,
+        "signals": {
+            "preference": demand.preferred_sessions,
+            "intent": demand.intended_sessions,
+            "reported_meal": demand.dined_sessions,
+        },
+    }
+    if payload.action == "PLAN":
+        data["plan"] = analyze_supply(demand, *resources).model_dump(mode="json")
+    return data

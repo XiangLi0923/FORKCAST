@@ -18,7 +18,7 @@ from starlette.requests import Request
 from starlette.responses import FileResponse, JSONResponse
 from starlette.routing import Route
 
-from .decision_demo import DemoRequest, demonstrate
+from .decision_demo import DemoOperationsRequest, DemoRequest, demonstrate, demonstrate_operations
 from .demand_insights import DemandAggregationService, DemandInsightsQuery
 from .errors import Fault
 from .models import ID, Model, SnapshotRef
@@ -318,11 +318,17 @@ def create_app(database: Path, mode: str = "SIMULATION", credential: OperatorCre
         payload = await parse_json(request, DemoRequest)
         return JSONResponse({"data": await run_in_threadpool(demonstrate, payload)}, headers=WEB_HEADERS)
 
+    async def demo_operations(request: Request):
+        check_origin(request)
+        payload = await parse_json(request, DemoOperationsRequest)
+        data = await run_in_threadpool(demonstrate_operations, payload)
+        return JSONResponse({"data": data}, headers=WEB_HEADERS)
+
     async def student_asset(request: Request):
         name = request.path_params["name"]
         assets = {
             "student.css": "text/css", "student.mjs": "text/javascript", "decision_gate.mjs": "text/javascript",
-            "demo.css": "text/css", "demo.mjs": "text/javascript",
+            "demo.css": "text/css", "demo.mjs": "text/javascript", "demo-hero.webp": "image/webp",
             "ops.css": "text/css", "ops.mjs": "text/javascript", "mcp-receipt.mjs": "text/javascript",
         }
         if name not in assets:
@@ -348,6 +354,7 @@ def create_app(database: Path, mode: str = "SIMULATION", credential: OperatorCre
             Route("/ops", ops_home),
             Route("/demo", demo_home),
             Route("/api/v1/demo/decision", demo_decision, methods=["POST"]),
+            Route("/api/v1/demo/operations", demo_operations, methods=["POST"]),
             Route("/student-assets/{name}", student_asset),
             Route("/health", health),
             Route("/api/v1/runs/current", current),

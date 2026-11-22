@@ -30,7 +30,7 @@ class DecisionDemoTest(unittest.TestCase):
     def test_page_assets_and_visible_entry_points(self):
         for url in ("/", "/ops"):
             self.assertIn('href="/demo"', self.client.get(url).text)
-        for url in ("/demo", "/student-assets/demo.mjs", "/student-assets/demo.css"):
+        for url in ("/demo", "/student-assets/demo.mjs", "/student-assets/demo.css", "/student-assets/demo-hero.webp"):
             self.assertEqual(self.client.get(url).status_code, 200)
         self.assertIn("赛后体验更新", self.client.get("/demo").text)
 
@@ -74,3 +74,29 @@ class DecisionDemoTest(unittest.TestCase):
         self.assertNotEqual(no_approval["result"]["primary"]["bundle_id"], "B_A_DUCK")
         self.assertEqual(approved["result"]["primary"]["bundle_id"], "B_A_DUCK")
         self.assertEqual(before, self.client.get(run_path).json())
+
+    def test_guided_operations_returns_plan_only_after_explicit_action(self):
+        path = "/api/v1/demo/operations"
+        run_path = "/api/v1/runs/current"
+        before = self.client.get(run_path).json()
+        request = {"action": "SUMMARIZE", "chosen_dish_id": "D_A_DUCK"}
+        response = self.client.post(path, json=request)
+        self.assertEqual(response.status_code, 200)
+        summary = response.json()["data"]
+        self.assertEqual(summary["signals"]["intent"], 5)
+        self.assertNotIn("plan", summary)
+        self.assertFalse(summary["included"])
+
+        request.update(action="PLAN", share_intent=True)
+        data = self.client.post(path, json=request).json()["data"]
+        self.assertTrue(data["included"])
+        self.assertEqual(data["signals"]["intent"], 6)
+        self.assertEqual(data["plan"]["demand_proxy_portions"], 6)
+        self.assertEqual(data["plan"]["feasible_extra_portions"], 3)
+        self.assertIn("INGREDIENT_LIMIT", data["plan"]["evidence_codes"])
+        request.update(chosen_dish_id="D_B_CHICKEN")
+        unrelated = self.client.post(path, json=request).json()["data"]
+        self.assertEqual(unrelated["signals"]["intent"], 5)
+        self.assertFalse(unrelated["included"])
+        self.assertEqual(self.client.get(run_path).json(), before)
+        self.assertEqual(self.client.post(path, json={**request, "chosen_dish_id": "invented"}).status_code, 400)
