@@ -8,14 +8,12 @@ C 端提供完整餐次推荐、条件调整、换荐及可选授权。B 端区�
 
 ## 快速体验
 
-本仓库为农客松比赛版 V0.3，数据来源为模拟场景，服务默认绑定本机回环地址。使用 Python 3.12。按 [Windows 运行指南](docs/competition/submission/RUN_GUIDE.md) 安装依赖并启动，默认学生端为 http://127.0.0.1:8000/，运营端为 http://127.0.0.1:8000/ops。
+本仓库为农客松比赛版 V0.3，数据来源为模拟场景，服务默认绑定本机回环地址。使用 Python 3.12。按 [Windows 运行指南](docs/RUN_GUIDE.md) 安装依赖并启动，默认学生端为 http://127.0.0.1:8000/，运营端为 http://127.0.0.1:8000/ops。
 
 | 内容 | 入口 |
 | --- | --- |
-| 比赛材料总览 | [提交、路演与答辩](docs/competition/README.md) |
-| 冷启动到补备生效 | [双端现场演示](docs/competition/06_LIVE_DEMO_RUNBOOK.md) |
-| 产品与实现 | [PRD V0.3](docs/competition/02_PRD_V0.3.md) · [决策引擎](DECISION_ENGINE_SPEC.md) · [数据规范](DATA_SCHEMA.md) · [模拟规范](SIMULATION_SPEC.md) |
+| 产品与实现 | [PRD V0.3](docs/PRD_V0.3.md) · [决策引擎](DECISION_ENGINE_SPEC.md) · [数据规范](DATA_SCHEMA.md) · [模拟规范](SIMULATION_SPEC.md) |
 | MCP 工具 | [接口规范](MCP_API_SPEC.md) · [本地 MCP 演示指南](FORKCAST_V0.3_M4_DEMO_GUIDE.md) |
-| 工程验证 | [复验记录](docs/competition/submission/REPRODUCTION_LOG.txt) · [交付状态](docs/competition/submission/DELIVERY_STATUS.md) |
+| 工程验证 | [复验记录](docs/REPRODUCTION_LOG.txt) |
 
 比赛复验通过了 E01 双端闭环及其对照、授权与撤回场景，以及 E03 本地 MCP 协议场景。网页 HTTP 确认已有实测。可见 Edge 中通过人工回执完成首次 MCP 确认的完整取证仍待验收。
