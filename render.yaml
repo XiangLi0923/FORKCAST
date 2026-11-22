@@ -11,7 +11,7 @@ services:
       - key: PYTHON_VERSION
         value: 3.12.10
       - key: FORKCAST_PUBLIC_ORIGIN
-        value: https://aks-forkcast.netlify.app
+        value: https://forkcast-campus.onrender.com
       - key: FORKCAST_DATA_MODE
         value: SIMULATION
       - key: FORKCAST_DATABASE
