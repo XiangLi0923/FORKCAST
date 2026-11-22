@@ -1,0 +1,2 @@
+http://aks-forkcast.netlify.app/* https://aks-forkcast.netlify.app/:splat 301!
+/* https://forkcast-campus.onrender.com/:splat 200!

@@ -3,35 +3,38 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>FORKCAST 食序 · 今日午餐</title>
+  <title>FORKCAST 食序 · 今天中午吃什么</title>
+  <meta name="description" content="按预算、时间和口味，选一份现在吃得到的校园午餐。">
   <link rel="stylesheet" href="/student-assets/student.css">
   <script type="module" src="/student-assets/student.mjs"></script>
 </head>
 <body>
+  <a class="skip" href="#recommendations">跳到午餐推荐</a>
   <header class="top">
-    <a class="brand" href="/"><b>FORKCAST</b><span>食序</span></a>
-    <nav aria-label="页面导航">
-      <a href="#today">今日推荐</a><a href="#needs">当次需求</a><a href="#privacy">分享授权</a>
-    </nav>
-    <span class="mode">SIMULATION</span>
+    <a class="brand" href="/" aria-label="FORKCAST 食序学生端"><b>FORKCAST</b><span>食序</span></a>
+    <nav aria-label="学生导航"><a href="#needs">调整条件</a><a href="#feedback">用餐反馈</a><a href="#privacy">分享设置</a><a href="/ops">运营端 ↗</a></nav>
   </header>
   <main id="today">
     <section class="intro">
-      <div><h1>今天中午吃什么？</h1><p>看一份今天可行的午餐，也可以按当下需求再选。</p></div>
-      <div class="run-info"><span id="scene">校园模拟场景</span><strong id="clock">连接中</strong><span id="revision"></span></div>
+      <div class="hero-copy"><p class="mode">SIMULATION · 校园午餐</p>
+        <h1>今天中午，<br>去哪吃？</h1><p class="lead">按预算、时间和口味，选一份现在吃得到的午餐。</p>
+        <div class="hero-actions"><a class="button primary" href="#recommendations">看我的推荐 ↓</a><a href="#needs">调整午餐条件</a></div>
+      </div>
+      <div class="run-info"><span id="scene">校园模拟场景</span><strong id="clock">连接中</strong><span id="revision" aria-live="polite"></span></div>
     </section>
     <div class="banner" id="network" role="status" hidden></div>
     <div class="layout">
       <div class="main-column">
-        <section aria-label="当前餐食推荐">
+        <section id="recommendations" aria-label="当前餐食推荐">
           <div class="section-title"><h2>今天的推荐</h2><span id="loading" role="status">正在生成推荐…</span></div>
+          <p class="quiet">推荐按当前供应、预算、时间和口味重新计算，每张卡片都写明理由。菜品售罄时不会自动换餐，会保留你原来的选择。</p>
           <div id="decision-errors" class="banner" role="status" hidden></div>
           <div id="changes" class="banner" role="status" hidden></div>
           <div id="cards" class="cards"></div>
           <p class="caution" id="global-warnings" hidden></p>
         </section>
         <section class="panel feedback" id="feedback">
-          <h2>我的午餐</h2>
+          <h2>用餐反馈</h2>
           <p id="intent" class="intent" aria-live="polite">还没有选择。</p>
           <button type="button" id="clear-intent" class="text-button" data-action hidden>清除原意向</button>
           <div class="meal-entry">
@@ -42,13 +45,14 @@
               <button type="button" id="not-dined" class="button secondary" data-action>没有吃</button>
             </div>
           </div>
-          <p class="quiet">打算去吃与实际用餐分开记录。</p>
+          <p class="quiet">「打算去吃」和「实际吃了」分开记录，选择意向不会被算成订单。</p>
           <div id="feedback-status" class="form-status" role="status"></div>
         </section>
       </div>
       <aside class="side-column">
         <section class="panel" id="needs">
-          <h2>当次需求</h2>
+          <h2>调整午餐条件</h2>
+          <p class="quiet">不填也能用，系统会按当前供应给出默认推荐。</p>
           <form id="needs-form">
             <fieldset class="profiles"><legend>现在更在意什么？</legend>
               <label><input type="radio" name="profile" value="DEFAULT" checked><span>按默认推荐</span></label>
@@ -65,7 +69,7 @@
               <label><input type="checkbox" name="taste" value="light"> 清淡</label>
             </fieldset>
             <details class="requirements">
-              <summary>饮食限制</summary>
+              <summary>饮食限制（可选）</summary>
               <fieldset class="choices"><legend>不吃的食材</legend>
                 <label><input type="checkbox" name="ingredients" value="duck"> 鸭肉</label>
                 <label><input type="checkbox" name="ingredients" value="chicken"> 鸡肉</label>
@@ -81,10 +85,10 @@
           </form>
         </section>
         <section class="panel" id="privacy">
-          <h2>数据分享</h2>
+          <h2>分享设置</h2>
           <label class="share"><input id="share" type="checkbox" data-action> 同意分享运营需求信号</label>
           <p class="quiet" id="session-info">正在建立匿名试用会话。</p>
-          <p class="quiet">授权后的演示会话可贡献想吃、打算吃和自报用餐信号，用于后续餐饮运营分析。不分享仍可使用推荐和反馈。撤回会排除旧贡献；重开仅使用之后的新声明。</p>
+          <p class="quiet">授权后，本会话新产生的「想吃」「打算去吃」「自报吃过」会计入运营端的汇总分析；不分享仍可正常使用推荐和反馈。撤回会排除旧贡献，重新开启只计入之后的新记录。</p>
           <details>
             <summary>使用一次性凭据加入演示</summary>
             <form id="demo-form">
@@ -99,12 +103,12 @@
     <dialog id="agent-receipt" class="panel" aria-labelledby="agent-receipt-title">
       <h2 id="agent-receipt-title">授权本地 Agent 记录反馈</h2>
       <p>将参数交给本人已绑定的本地宿主。授权最多有效 120 秒。</p>
-      <textarea aria-label="submit_feedback 调用参数" rows="8" cols="48" readonly></textarea>
-      <button class="secondary" type="button" data-copy-receipt>复制参数</button>
+      <textarea aria-label="submit_feedback 调用参数" rows="8" readonly></textarea>
+      <div class="buttons"><button class="button secondary" type="button" data-copy-receipt>复制参数</button></div>
       <p class="form-status" role="status"></p>
-      <form method="dialog"><button class="secondary">关闭</button></form>
+      <form method="dialog"><button class="button secondary">关闭</button></form>
     </dialog>
-    <footer>食序 FORKCAST · 模拟数据与用餐时间估计仅用于试用</footer>
+    <footer><b>FORKCAST · 食序</b><span>终结决策疲劳，闭环 BC 两端。</span></footer>
   </main>
 </body>
 </html>

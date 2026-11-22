@@ -1,4 +1,4 @@
-"""Loopback HTTP entry points for the FORKCAST simulation service."""
+"""HTTP entry points for the FORKCAST simulation service."""
 
 import logging
 import os
@@ -7,6 +7,7 @@ import sqlite3
 from dataclasses import dataclass
 from hmac import compare_digest
 from pathlib import Path
+from urllib.parse import urlsplit
 
 from pydantic import ValidationError
 from starlette.applications import Starlette
@@ -61,6 +62,28 @@ class OperatorCredential:
     actor: OpsActor
 
 
+@dataclass(frozen=True)
+class PublicDeployment:
+    origin: str
+    upstream_host: str
+
+    def __post_init__(self):
+        try:
+            origin = urlsplit(self.origin)
+            hostname = origin.hostname or ""
+            upstream_host = self.upstream_host
+        except ValueError:
+            raise ValueError("Invalid FORKCAST public origin or upstream host.") from None
+        dns_name = r"[a-z0-9](?:[a-z0-9-]{0,61}[a-z0-9])?(?:\.[a-z0-9](?:[a-z0-9-]{0,61}[a-z0-9])?)+"
+        if (not re.fullmatch(dns_name, hostname) or self.origin != f"https://{hostname}"
+                or not re.fullmatch(dns_name, upstream_host)):
+            raise ValueError("FORKCAST requires an exact HTTPS public origin and an exact upstream hostname.")
+
+    @property
+    def hosts(self) -> list[str]:
+        return [urlsplit(self.origin).hostname, self.upstream_host]
+
+
 def success(ref: SnapshotRef, data: dict) -> JSONResponse:
     return JSONResponse({
         "schema_version": "0.3", "ok": True, "data_mode": ref.data_mode,
@@ -78,12 +101,16 @@ def failure(error: Fault) -> JSONResponse:
     }, status_code=STATUS[error.code], headers={"Cache-Control": "no-store"})
 
 
-def check_origin(request: Request):
+def expected_origin(request: Request) -> str:
+    return request.app.state.public_origin or f"{request.url.scheme}://{request.url.netloc}"
+
+
+def check_origin(request: Request, *, required: bool = False):
     origin = request.headers.get("origin")
-    if (origin is not None and origin != f"{request.url.scheme}://{request.url.netloc}") or (
+    if ((required or origin is not None) and origin != expected_origin(request)) or (
         request.headers.get("sec-fetch-site") in ("cross-site", "same-site")
     ):
-        raise Fault("FORBIDDEN", "This operation requires the local origin.")
+        raise Fault("FORBIDDEN", "This operation requires the configured same origin.")
 
 
 def no_query(request: Request):
@@ -114,7 +141,8 @@ def parse_query(request: Request, cls: type[Model]):
     return cls.model_validate(data)
 
 
-def create_app(database: Path, mode: str = "SIMULATION", credential: OperatorCredential | None = None):
+def create_app(database: Path, mode: str = "SIMULATION", credential: OperatorCredential | None = None,
+               *, public: PublicDeployment | None = None):
     store = SimulationStore(database)
     provider: DataProvider = MockProvider(store)
     student = StudentService(store)
@@ -180,7 +208,7 @@ def create_app(database: Path, mode: str = "SIMULATION", credential: OperatorCre
         if token is not None:
             # HTTP is restricted to loopback; HTTPS deployments also require a Secure cookie.
             response.set_cookie(STUDENT_COOKIE, token, path="/", httponly=True, samesite="strict",
-                                secure=request.url.scheme == "https")
+                                secure=public is not None or request.url.scheme == "https")
         return response
 
     async def enroll(request: Request):
@@ -235,11 +263,9 @@ def create_app(database: Path, mode: str = "SIMULATION", credential: OperatorCre
         return success(ref, result.model_dump(mode="json"))
 
     async def interaction_receipt(request: Request):
-        check_origin(request)
+        check_origin(request, required=True)
         no_query(request)
         ready()
-        if request.headers.get("origin") != f"{request.url.scheme}://{request.url.netloc}":
-            raise Fault("FORBIDDEN", "A same-origin Web action is required.")
         payload = await parse_json(request, InteractionRequest)
         actor = operator(request) if payload.tool == OPS_WRITE else None
         ref, data = await run_in_threadpool(interactions.issue, payload, actor=actor,
@@ -306,7 +332,7 @@ def create_app(database: Path, mode: str = "SIMULATION", credential: OperatorCre
             return failure(Fault("DEPENDENCY_UNAVAILABLE", "Simulation store is busy."))
         return failure(Fault("INTERNAL_ERROR", "Simulation store could not complete the operation."))
 
-    return Starlette(
+    app = Starlette(
         routes=[
             Route("/", student_home),
             Route("/ops", ops_home),
@@ -330,8 +356,11 @@ def create_app(database: Path, mode: str = "SIMULATION", credential: OperatorCre
             Route("/api/v1/admin/simulation/events", event, methods=["POST"]),
         ],
         exception_handlers={Fault: fault_handler, ValidationError: validation_handler, sqlite3.Error: database_handler},
-        middleware=[Middleware(TrustedHostMiddleware, allowed_hosts=["localhost", "127.0.0.1"])],
+        middleware=[Middleware(TrustedHostMiddleware, allowed_hosts=public.hosts if public else ["localhost", "127.0.0.1"],
+                               www_redirect=False)],
     )
+    app.state.public_origin = public.origin if public else None
+    return app
 
 
 def operator_credential_from_env():
@@ -345,8 +374,14 @@ def operator_credential_from_env():
 
 
 def from_env():
+    origin = os.getenv("FORKCAST_PUBLIC_ORIGIN")
+    upstream_host = os.getenv("FORKCAST_UPSTREAM_HOST") or os.getenv("RENDER_EXTERNAL_HOSTNAME")
+    public = None
+    if origin is not None or upstream_host is not None:
+        public = PublicDeployment(origin or "", upstream_host or "")
     return create_app(
         Path(os.getenv("FORKCAST_DATABASE", "forkcast.sqlite3")),
         os.getenv("FORKCAST_DATA_MODE", "SIMULATION"),
         operator_credential_from_env(),
+        public=public,
     )

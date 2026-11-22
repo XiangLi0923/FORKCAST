@@ -1,0 +1,24 @@
+services:
+  - type: web
+    name: forkcast-campus
+    runtime: python
+    plan: free
+    branch: feat/forkcast-v1-upgrade
+    buildCommand: python -m pip install -r requirements.txt
+    startCommand: python -m uvicorn forkcast.http:from_env --factory --host 0.0.0.0 --port "$PORT" --workers 1 --no-proxy-headers
+    healthCheckPath: /health
+    envVars:
+      - key: PYTHON_VERSION
+        value: 3.12.10
+      - key: FORKCAST_PUBLIC_ORIGIN
+        value: https://forkcast-campus.onrender.com
+      - key: FORKCAST_DATA_MODE
+        value: SIMULATION
+      - key: FORKCAST_DATABASE
+        value: /tmp/forkcast.sqlite3
+      - key: FORKCAST_OPS_TOKEN
+        sync: false
+      - key: FORKCAST_OPS_VENUES
+        value: V_A,V_B
+      - key: FORKCAST_OPS_RUN_CONTROL
+        value: "1"

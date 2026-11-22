@@ -1,20 +1,60 @@
-.auth { display:flex; align-items:end; gap:12px; margin-bottom:16px; }
-.auth label { width:min(330px, 70%); }
-.table-scroll { overflow-x:auto; margin-top:12px; }
-table { width:100%; border-collapse:collapse; font-size:.85rem; }
-th,td { text-align:left; padding:8px; border-bottom:1px solid var(--line); }
-th { color:var(--olive-dark); background:var(--wash); }
-.compact-form { display:flex; align-items:end; flex-wrap:wrap; margin-bottom:14px; }
-.compact-form input, input[type=time] {
-  display:block; margin-top:4px; min-height:37px; width:100%; padding:8px; border:1px solid #c8ccbc;
-  border-radius:6px; color:var(--ink); background:white;
+/* 运营工作台专属样式（student.css 已提供统一设计系统） */
+
+/* 运营者入口 */
+.auth {
+  display: grid; grid-template-columns: minmax(0, 460px) auto;
+  justify-content: start; gap: 14px 18px; align-items: end; margin-bottom: 18px;
 }
-.compact-form label { min-width:min(240px,100%); }
-.ops-card { margin:10px 0; }
-.ops-card h3 { margin-bottom:7px; font-size:1.13rem; }
-.ops-card code, #run, #snapshot, .ops-audit { overflow-wrap:anywhere; }
-.ops-card .compact-form { margin:10px 0 0; }
-.ops-audit { padding-left:1.3rem; font-size:.8rem; line-height:1.6; }
-#sold-form,#ticket-label { margin-top:14px; display:block; }
-#sold-form button { margin-top:8px; }
-@media (max-width:550px) { .auth { display:grid; } .auth label { width:100%; } }
+.auth > div { grid-column: 1 / -1; }
+.auth h2 { margin: 0; }
+.auth .quiet { margin: 6px 0 0; }
+.auth label { width: 100%; }
+.auth label input { margin-top: 6px; }
+.auth > .button { align-self: end; }
+
+/* 总览之后的分区留白 */
+.ops-home .intro { padding-bottom: 28px; }
+.ops-home .overview { margin-bottom: 4px; }
+
+/* 表格与紧凑表单 */
+.table-scroll { margin-top: 12px; }
+.table-scroll table { min-width: 520px; }
+.compact-form { display: flex; align-items: end; flex-wrap: wrap; gap: 10px; margin: 12px 0 14px; }
+.compact-form label { min-width: min(240px, 100%); flex: 1 1 180px; }
+.compact-form input, input[type=time] { margin-top: 6px; }
+details > .compact-form { margin-top: 12px; }
+details > .table-scroll { margin-top: 12px; }
+
+/* 提案与执行卡片 */
+.ops-card { margin: 12px 0; padding: 18px 20px; border-left: 4px solid var(--line-strong); }
+.ops-card h3 { margin: 0 0 8px; font-size: 1.04rem; }
+.ops-card .quiet { margin: 6px 0; }
+.ops-card .compact-form { margin: 14px 0 0; }
+.ops-card[data-status="CONFIRMED"] { border-left-color: var(--accent); background: var(--accent-soft); }
+.ops-card[data-status="APPLIED"] { border-left-color: var(--olive); background: var(--olive-soft); }
+.ops-card .intent { margin: 8px 0; }
+
+/* 审计日志 */
+.ops-audit { padding-left: 1.2rem; font-size: .8rem; line-height: 1.8; color: var(--muted); margin: 8px 0 0; }
+.ops-audit li { padding-left: 2px; }
+#audit-list { margin-top: 14px; }
+
+/* 模拟控制台 */
+#run, #snapshot { overflow-wrap: anywhere; }
+#run { font: .8rem/1.6 ui-monospace, "SFMono-Regular", monospace; color: var(--muted); margin: 10px 0 0; }
+#sold-form, #ticket-label { display: block; margin-top: 16px; }
+#sold-form button { margin-top: 10px; }
+.side-column .panel > form + form { margin-top: 18px; padding-top: 16px; border-top: 1px solid var(--line); }
+.side-column .panel > .buttons { margin-top: 14px; }
+#demo-ticket { font-family: ui-monospace, monospace; font-size: .82rem; }
+
+/* 移动端 */
+@media (max-width: 760px) {
+  .auth { grid-template-columns: 1fr; }
+  .auth > .button { justify-self: start; }
+  .overview { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+}
+@media (max-width: 440px) {
+  .overview { grid-template-columns: 1fr; }
+  .overview > div { min-height: 0; }
+}
