@@ -71,7 +71,7 @@ function banner(id, text) {
 
 function setNetwork(offline) {
   state.offline = offline;
-  banner("network", offline ? "连接中断。当前显示的是上次取得的旧数据，恢复连接后会自动刷新。" : "");
+  banner("network", offline ? "网络暂时断开，先展示上次取得的推荐；恢复连接后会自动刷新。" : "");
   updateActions();
 }
 
@@ -171,11 +171,10 @@ function renderCard({option, labels}, rec) {
   card.dataset.bundle = option.bundle_id;
   if (labels.includes("首选")) card.dataset.primary = "true";
   const top = node("div", "", "card-top");
-  top.append(node("span", labels.join(" · "), "category"),
-    node("span", "匹配 " + (option.match_score / 10).toFixed(1) + " / 100 · 可信度 " + names[option.data_confidence], "score"));
-  const where = venues.get(option.venue_id) || option.venue_id;
+  const where = venues.get(option.venue_id) || "场所待核实";
+  top.append(node("span", labels.join(" · "), "category"), node("span", where, "where"));
   const items = option.items.map(item => (dishes.get(item.dish_id) || item.dish_id) + " × " + item.portions + " 份");
-  card.append(top, node("h3", option.label), node("p", where, "where"), node("p", items.join("、"), "items"));
+  card.append(top, node("h3", option.label), node("p", items.join("、"), "items"));
   const grid = node("dl", "", "metrics");
   for (const [label, value] of [
     ["价格", option.price_cents === null ? "未知" : "¥" + (option.price_cents / 100).toFixed(2)],
@@ -195,15 +194,18 @@ function renderCard({option, labels}, rec) {
     return e.source_ref + asOf;
   }))];
   const details = node("details");
-  details.append(node("summary", "数据来源 · 模拟"), node("p", known.join("；") || "当前模拟快照", "sources"));
+  details.append(node("summary", "查看评分与模拟数据来源"),
+    node("p", "匹配 " + (option.match_score / 10).toFixed(1) + " / 100 · 可信度 " + names[option.data_confidence], "score"), node("p", known.join("；") || "当前模拟快照", "sources"));
   card.append(details);
   const controls = node("div", "", "buttons");
   controls.append(
     actionButton("就吃这个", "primary", () => feedback("INTENT_SELECTED", {rec, option})),
     actionButton("不想吃这个", "secondary", () => feedback("REJECTED", {rec, option})),
-    actionButton("授权 Agent 记录意向", "secondary", () => feedback("INTENT_SELECTED", {rec, option}, true)),
   );
-  card.append(controls);
+  const delegate = node("details");
+  delegate.append(node("summary", "通过本地 Agent 操作"),
+    actionButton("授权 Agent 记录意向", "secondary", () => feedback("INTENT_SELECTED", {rec, option}, true)));
+  card.append(controls, delegate);
   return card;
 }
 
@@ -241,7 +243,8 @@ function paint() {
       for (const card of visibleCards(result)) list.append(renderCard(card, result.recommendation_id));
     } else {
       const empty = node("article", "", "panel");
-      empty.append(node("h3", "当前没有可行餐次"), node("p", "可以调整预算、时间或其他非安全条件，再试一次。"));
+      empty.append(node("h3", "现在没有合适的餐次"),
+        node("p", "试试放宽预算或可用时间，或换一种口味。右侧的条件随时可以改，改完点「更新推荐」。", "quiet"));
       appendMessages(empty, result.conflicts, "risks");
       list.append(empty);
     }
@@ -268,7 +271,8 @@ function paint() {
   intent.textContent = state.intent ? (
     "原意向：" + state.intent.option.label +
     (needsReselect
-      ? (intentIsOffered ? "。当前可以重新选择这份餐次，请主动确认。" : "。请根据当前推荐确认是否另选。")
+      ? (intentIsOffered ? "。供应有变化：这份餐次现在仍可选，要不要吃由你决定，换餐需要再点一次「就吃这个」。"
+        : "。供应有变化，原选择已保留，系统不会自动换餐。请从新推荐里另选一份，或清除原意向。")
       : "。已记录打算去吃。")
   ) : "还没有选择。";
   $("clear-intent").hidden = !state.intent?.rec;

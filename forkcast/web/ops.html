@@ -3,56 +3,63 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>FORKCAST 食序 · 运营工作台</title>
+  <title>FORKCAST 食序 · 午餐备餐工作台</title>
+  <meta name="description" content="查看授权需求、分析供需缺口、人工审批备餐建议，并在下一供餐窗口生效。">
   <link rel="stylesheet" href="/student-assets/student.css">
   <link rel="stylesheet" href="/student-assets/ops.css">
   <script type="module" src="/student-assets/ops.mjs"></script>
 </head>
 <body>
-  <header class="top">
-    <a class="brand" href="/ops"><b>FORKCAST</b><span>食序</span></a>
-    <nav aria-label="运营导航">
-      <a href="#demand">需求</a><a href="#proposals">提案</a><a href="#execution">运营状态</a><a href="/" target="_blank" rel="noopener">学生端 ↗</a>
-    </nav>
-    <span class="mode">SIMULATION · 模拟运营数据</span>
+  <a class="skip" href="#authenticate">跳到运营入口</a>
+  <header class="top"><a class="brand" href="/ops" aria-label="FORKCAST 食序运营端"><b>FORKCAST</b><span>食序</span></a>
+    <nav aria-label="运营导航"><a href="#demand">供需</a><a href="#proposals">待审批</a><a href="#execution">执行记录</a><a href="/" target="_blank" rel="noopener">学生端 ↗</a></nav>
   </header>
-  <main>
+  <main class="ops-home">
     <section class="intro">
-      <div><h1>供餐运营工作台</h1><p>根据已授权需求，为下一供餐窗口安排备餐。</p></div>
-      <div class="run-info"><span id="run">等待连接</span><strong id="clock">—</strong><span id="snapshot">—</span></div>
+      <div class="hero-copy"><p class="mode">SIMULATION · 模拟运营数据</p>
+        <h1>午餐备餐工作台</h1><p class="lead">看学生已授权的需求信号，核对缺口，再决定下一窗口多备多少份。</p></div>
+      <div class="run-info"><span>模拟校园时间</span><strong id="clock">—</strong><span id="snapshot">等待读取</span></div>
     </section>
     <form class="panel auth" id="authenticate">
-      <label for="ops-token">本地 OPS 凭据<input id="ops-token" type="password" autocomplete="off" required></label>
+      <div><h2>运营者入口</h2><p class="quiet">使用获授权的场所凭据查看供需与审批。凭据只在本次页面会话中使用。</p></div>
+      <label for="ops-token">运营凭据<input id="ops-token" type="password" autocomplete="off" required></label>
       <button class="button primary">连接运营工作台</button>
     </form>
     <p id="notice" class="banner" role="status" hidden></p>
     <p id="connection" class="banner" role="status" hidden></p>
     <div class="layout" id="dashboard" hidden>
-      <div class="main-column">
+      <div class="main-column"><section class="overview" aria-label="运营总览">
+          <div><span>当前供餐窗口</span><strong id="active-window">—</strong><small id="active-window-time"></small></div>
+          <div><span>最大可见缺口</span><strong id="top-shortage">待分析</strong><small id="focus-dish"></small></div>
+          <div><span>待审批建议</span><strong id="pending-count">待分析</strong></div>
+          <div><span>当前已生效</span><strong id="applied-count">—</strong></div>
+        </section>
         <section class="panel" id="demand">
-          <div class="section-title"><h2>W1 授权需求与 W2 供需分析</h2><span id="signals"></span></div>
-          <p class="quiet">偏好、意向和用餐自报分别汇总。— 表示该数值未披露或尚无分析。需求代理为模拟估计。</p>
+          <div class="section-title"><h2>需求与供应</h2><span id="signals"></span></div>
+          <p class="quiet">「想吃」「打算去吃」「自报吃过」分别统计，不互相折算；人数不足的渠道不披露计数。「估计需求」是模拟推算值，不等于实际订单。</p>
           <div class="buttons"><button type="button" class="button primary" id="generate" data-live>生成运营建议</button><button type="button" id="refresh" class="button secondary">刷新数据</button></div>
-          <div id="demand-rows" class="table-scroll"></div>
+          <h3>学生授权信号</h3><p class="quiet">只汇总主动授权的需求信号，未授权会话不计入。</p>
+          <div id="demand-rows" class="table-scroll"></div><h3>下一窗口备餐缺口</h3><div id="supply-rows"></div>
         </section>
         <section class="panel" id="proposals">
-          <h2>待确认提案</h2>
-          <div id="proposal-list"><p class="quiet">生成运营建议后可在此填写批准份数。</p></div>
+          <h2>待审批建议</h2>
+          <div id="proposal-list"><p class="quiet">生成运营建议后，在此填写实际批准份数并确认。系统不会自动执行。</p></div>
         </section>
         <section class="panel" id="execution">
-          <div class="section-title"><h2>W2 运营状态</h2><span id="execution-version"></span></div>
-          <form id="history-form" class="compact-form">
-            <label for="history-snapshot">历史快照 ID <input id="history-snapshot" maxlength="64" autocomplete="off" placeholder="留空查看最新版本"></label>
+          <div class="section-title"><h2>供给执行与审计</h2><span id="execution-version"></span></div>
+          <p class="quiet">已确认的动作要等目标供餐窗口到达才生效；下面保留审批记录、历史快照与审计日志。</p>
+          <details><summary>查看历史快照</summary><form id="history-form" class="compact-form">
+            <label for="history-snapshot">历史快照编号 <input id="history-snapshot" maxlength="64" autocomplete="off" placeholder="留空查看最新版本"></label>
             <button class="button secondary">读取指定快照</button>
           </form>
-          <div id="action-list"></div>
+          </details><div id="action-list"></div>
           <div id="audit-list"></div>
-          <details><summary>查看 W2 供应计划与快照现货</summary><div id="plan-list" class="table-scroll"></div></details>
+          <details><summary>查看下一窗口供应计划与快照现货</summary><div id="plan-list" class="table-scroll"></div></details>
         </section>
       </div>
       <aside class="side-column">
         <section class="panel">
-          <h2>模拟运行控制</h2>
+          <h2>模拟控制台</h2><details><summary>运行信息</summary><p id="run"></p></details>
           <form id="clock-form">
             <label for="advance-clock">推进至校园时间 <input type="time" id="advance-clock" min="11:40" max="12:30" value="12:00" required></label>
             <button class="button primary" data-live>推进时钟</button>
@@ -65,7 +72,7 @@
         </section>
         <section class="panel">
           <h2>邀请学生加入演示</h2>
-          <p class="quiet">一次性凭据有效期为 120 秒。学生可在学生端加入演示，并自行选择是否分享。</p>
+          <p class="quiet">一次性凭据有效期 120 秒。学生在学生端加入后，仍需自己主动打开分享才会贡献需求信号。</p>
           <button id="issue-ticket" type="button" class="button secondary" data-live>发放演示凭据</button>
           <label id="ticket-label" for="demo-ticket" hidden>演示凭据<input id="demo-ticket" type="password" readonly></label>
           <button id="copy-ticket" type="button" class="text-button" hidden>复制凭据</button>
@@ -75,12 +82,12 @@
     <dialog id="agent-receipt" class="panel" aria-labelledby="agent-receipt-title">
       <h2 id="agent-receipt-title">授权本地 Agent 确认备餐</h2>
       <p>将参数交给本人已绑定的本地宿主。授权最多有效 120 秒。</p>
-      <textarea aria-label="confirm_ops_action 调用参数" rows="8" cols="48" readonly></textarea>
-      <button class="button secondary" type="button" data-copy-receipt>复制参数</button>
+      <textarea aria-label="confirm_ops_action 调用参数" rows="8" readonly></textarea>
+      <div class="buttons"><button class="button secondary" type="button" data-copy-receipt>复制参数</button></div>
       <p class="form-status" role="status"></p>
       <form method="dialog"><button class="button secondary">关闭</button></form>
     </dialog>
-    <footer>FORKCAST 食序 · 校园供餐模拟</footer>
+    <footer><b>FORKCAST · 食序</b><span>终结决策疲劳，闭环 BC 两端。</span></footer>
   </main>
 </body>
 </html>

@@ -12,7 +12,7 @@ const reason = {
   DISH_CAPACITY_LIMIT: "达到菜品供应上限", PREP_CAPACITY_LIMIT: "食堂产能限制", INGREDIENT_LIMIT: "原料限制",
 };
 const messages = {
-  UNAUTHENTICATED: "OPS 凭据无效，请重新连接。", FORBIDDEN: "当前凭据无权执行此操作。",
+  UNAUTHENTICATED: "运营凭据无效，请重新连接。", FORBIDDEN: "当前凭据无权执行此操作。",
   SNAPSHOT_CONFLICT: "供应已更新，请刷新后重新生成建议。", STALE_PROPOSAL: "提案已失效，请重新生成。",
   OPS_ALREADY_CONFIRMED: "此提案已确认，最新结果可在运营状态查看。",
   NOT_FOUND: "当前运行中未找到该记录。", INVALID_INPUT: "请求与当前窗口或允许的数量不匹配。",
@@ -59,7 +59,7 @@ const runFields = () => ({run_id: state.snapshot.run_id});
 const windowId = label => state.snapshot.run_id + "." + label;
 const timestamp = value => value ? localTime.format(new Date(value)) : "—";
 const label = dish => state.names.get(dish) || dish;
-const evidence = code => (reason[code] || code) + " (" + code + ")";
+const evidence = code => reason[code] || code;
 
 function table(headings, rows) {
   const dom = element("table");
@@ -78,18 +78,60 @@ function table(headings, rows) {
 }
 
 function drawDemand() {
-  $("signals").textContent = "信号版本 " + state.demand.data.signals_revision;
-  const analysis = new Map((state.report?.data.analyses || []).map(row => [row.dish_id, row]));
-  $("demand-rows").replaceChildren(table(
-    ["菜品", "P", "I", "A", "代理", "计划", "缺口", "可追加", "未覆盖", "原料复核", "依据"],
-    state.demand.data.rows.map(row => {
-      const a = analysis.get(row.dish_id);
-      return [label(row.dish_id), row.preferred_sessions, row.intended_sessions, row.dined_sessions,
-        a?.demand_proxy_portions ?? null, a?.planned_supply_portions ?? null, a?.shortage_portions ?? null,
-        a?.feasible_extra_portions ?? null, a?.uncovered_portions ?? null, a?.ingredient_review_portions ?? null,
-        a?.evidence_codes.map(evidence).join("、") ?? null];
-    }),
-  ));
+  $("signals").textContent = "授权信号 · 第 " + state.demand.data.signals_revision + " 版";
+  const report = state.report?.data;
+  const rows = state.demand.data.rows;
+  const signal = count => count === null ? "未披露" : count;
+  const shown = rows.filter(row => row.preferred_sessions !== null || row.intended_sessions !== null
+    || row.dined_sessions !== null);
+  const hidden = rows.filter(row => !shown.includes(row));
+  const buildTable = list => table(["菜品", "想吃", "打算去吃", "自报吃过"],
+    list.map(row => [label(row.dish_id), signal(row.preferred_sessions),
+      signal(row.intended_sessions), signal(row.dined_sessions)]));
+  const signalArea = $("demand-rows");
+  // 先展示有信号的菜品，把「未达披露门槛」的行折叠起来，避免运营者被整张表淹没。
+  signalArea.replaceChildren(shown.length ? buildTable(shown)
+    : element("p", "这个窗口还没有达到披露门槛的授权信号。", "quiet"));
+  if (hidden.length) {
+    const fold = element("details");
+    fold.append(element("summary", "查看其余 " + hidden.length + " 道菜（信号不足，计数未披露）"),
+      buildTable(hidden));
+    signalArea.append(fold);
+  }
+  const area = $("supply-rows");
+  area.replaceChildren();
+  const analyses = [...(report?.analyses || [])].sort((a, b) =>
+    (b.shortage_portions ?? -1) - (a.shortage_portions ?? -1));
+  for (const row of analyses) {
+    const line = element("article", undefined, "supply-line");
+    line.append(element("h4", label(row.dish_id)), element("p",
+      "系统估计需求 " + (row.demand_proxy_portions ?? "未披露") + " · 计划供应 " + row.planned_supply_portions
+      + " · 缺口 " + (row.shortage_portions ?? "未知")));
+    if (row.shortage_portions > 0) {
+      const meter = element("progress");
+      meter.max = row.shortage_portions;
+      meter.value = row.feasible_extra_portions;
+      meter.setAttribute("aria-label", "可追加份数占缺口的比例");
+      line.append(meter);
+    }
+    line.append(element("p", "可追加 " + (row.feasible_extra_portions ?? "未知")
+      + " · 未覆盖 " + (row.uncovered_portions ?? "未知") + " · 原料复核 "
+      + (row.ingredient_review_portions ?? "未知"), "quiet"));
+    line.append(element("p", row.evidence_codes.map(code => reason[code] || code).join(" · "), "quiet"));
+    area.append(line);
+  }
+  if (!analyses.length) area.append(element("p", report ? "当前没有可分析的菜品。" : "点击生成运营建议，核对下一窗口的缺口、原料和追加产能。", "quiet"));
+  const peak = analyses.find(row => Number.isFinite(row.shortage_portions));
+  $("top-shortage").textContent = peak ? peak.shortage_portions + " 份" : report ? "未披露" : "待分析";
+  $("focus-dish").textContent = peak?.shortage_portions > 0 ? label(peak.dish_id) : "";
+  $("pending-count").textContent = report ? String(report.proposals.length) : "待分析";
+  // fixture v03.2 的窗口为 W1 11:30–12:00、W2 12:00–12:30；运行摘要只提供模拟时钟，
+  // 不含内部窗口 ID，因此按校园时间标注，避免读取不存在的字段。
+  const hhmm = String(state.snapshot.clock_at).slice(11, 16);
+  $("active-window").textContent = hhmm >= "12:30" ? "已收餐"
+    : hhmm >= "12:00" ? "正段窗口" : "前段窗口";
+  $("active-window-time").textContent = hhmm >= "12:30" ? "供餐已结束"
+    : hhmm >= "12:00" ? "12:00–12:30" : "11:30–12:00";
 }
 
 function drawProposals() {
@@ -97,10 +139,10 @@ function drawProposals() {
   for (const proposal of state.report?.data.proposals || []) {
     const card = element("article", undefined, "panel ops-card");
     card.dataset.proposal = proposal.proposal_id;
-    card.append(element("h3", label(proposal.dish_id) + " · PROPOSED"));
-    card.append(element("p", "代理 " + proposal.demand_proxy_portions + " · 计划 " + proposal.planned_supply_portions
+    card.append(element("h3", label(proposal.dish_id) + " · 待审批"));
+    card.append(element("p", "估计需求 " + proposal.demand_proxy_portions + " · 计划 " + proposal.planned_supply_portions
       + " · 缺口 " + proposal.shortage_portions + " · 建议追加 " + proposal.proposed_extra_portions
-      + " 份 · 预计 " + timestamp(proposal.expected_effective_at), "quiet"));
+      + " 份 · 目标窗口 " + timestamp(proposal.expected_effective_at), "quiet"));
     card.append(element("p", proposal.evidence_codes.map(evidence).join(" · "), "quiet"));
     const form = element("form", undefined, "compact-form");
     const field = element("label", "批准份数");
@@ -139,26 +181,27 @@ function drawProposals() {
         }
         await api("admin/ops-confirmations", {method: "POST", body: args});
         await refresh("");
-        notice("确认已记录，可在运营状态中查看。");
+        notice("已记录人工批准，可在下方供给执行与审计中查看状态。");
       });
     });
     card.append(form);
     cards.push(card);
   }
-  if (!cards.length) cards.push(element("p", "当前无待确认提案。可在当前窗口生成最新建议。", "quiet"));
+  if (!cards.length) cards.push(element("p", "暂无待审批建议。点击「生成运营建议」，核对缺口后再决定批准份数。", "quiet"));
   $("proposal-list").replaceChildren(...cards);
 }
 
 function drawExecution(menu) {
   const {data, snapshot} = state.execution;
-  $("execution-version").textContent = (state.history ? "历史快照 " : "最新快照 ")
-    + snapshot.revision + " · " + timestamp(snapshot.clock_at);
+  $("applied-count").textContent = state.history ? "历史视图" : String(data.actions.filter(row => row.status === "APPLIED").length);
+  $("execution-version").textContent = (state.history ? "历史视图 · " : "当前视图 · ")
+    + "第 " + snapshot.revision + " 版 · " + timestamp(snapshot.clock_at);
   $("action-list").replaceChildren(...data.actions.map(action => {
     const card = element("article", undefined, "panel ops-card");
     card.dataset.status = action.status;
     const confirmed = data.audit.find(row => row.proposal_id === action.proposal_id && row.action === "OPS_CONFIRMED");
     const applied = action.status === "APPLIED";
-    card.append(element("h3", label(action.dish_id) + " · " + action.status));
+    card.append(element("h3", label(action.dish_id) + (applied ? " · 已生效" : " · 已确认，等待生效")));
     card.append(element("p", applied ? "已生效 " + action.approved_extra_portions + " 份"
       : "已确认，等待目标供餐窗口生效。批准 " + action.approved_extra_portions + " 份", "intent"));
     card.append(element("p", "确认时间 " + timestamp(confirmed?.at) + " · 确认快照 " + action.confirmation_snapshot_id, "quiet"));
@@ -172,12 +215,17 @@ function drawExecution(menu) {
   }));
   if (!data.actions.length) $("action-list").append(element("p", "尚无确认或生效记录。", "quiet"));
   const audit = element("ul", undefined, "ops-audit");
-  for (const row of data.audit) audit.append(element("li",
-    row.action + " · " + timestamp(row.at) + " · " + row.snapshot_id + " · " + row.result_code));
+  const auditNames = {OPS_CONFIRMED: "运营确认备餐", OPS_APPLIED: "供给变更生效"};
+  for (const row of data.audit) {
+    const line = element("li", (auditNames[row.action] || row.action) + " · "
+      + timestamp(row.at) + " · 快照 " + row.snapshot_id);
+    line.title = row.action + " / " + row.result_code;
+    audit.append(line);
+  }
   $("audit-list").replaceChildren(audit);
   const stock = new Map(menu.data.options.filter(row => row.items.length === 1)
     .map(row => [row.anchor_dish_id, row.available_bundle_portions]));
-  $("plan-list").replaceChildren(table(["菜品", "W2 基线", "W2 批准追加", "W2 上限", "该快照的现货"],
+  $("plan-list").replaceChildren(table(["菜品", "计划供应", "已批准追加", "供应上限", "该快照现货"],
     data.plans.map(row => [label(row.dish_id), row.base_planned_portions, row.confirmed_extra_portions,
       row.max_served_portions, stock.get(row.dish_id)])));
 }
@@ -309,6 +357,7 @@ $("sold-form").addEventListener("submit", event => {
   act(() => simulate("SET_SOLD_OUT", {dish_id: $("sold-dish").value}));
 });
 $("reset").addEventListener("click", () => act(async () => {
+  if (!window.confirm("开始新的模拟运行？当前学生会话及演示凭据将失效。")) return;
   await api("admin/simulation/reset", {method: "POST", body: {
     scenario_id: "CLOSED_LOOP", idempotency_key: crypto.randomUUID(),
   }});
