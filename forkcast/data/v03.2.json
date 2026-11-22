@@ -1,0 +1,300 @@
+{
+  "fixture_version": "v03.2",
+  "seed": 20261121,
+  "source_ref": "fixture.v03.2",
+  "rules_version": "rules.v03.1",
+  "config_version": "config.v03.1",
+  "dictionary_version": "v03.2",
+  "starts_at": "2026-11-21T11:40:00+08:00",
+  "origin_zone_id": "DEMO_DEFAULT",
+  "windows": [
+    {
+      "label": "W1",
+      "starts_at": "2026-11-21T11:30:00+08:00",
+      "ends_at": "2026-11-21T12:00:00+08:00"
+    },
+    {
+      "label": "W2",
+      "starts_at": "2026-11-21T12:00:00+08:00",
+      "ends_at": "2026-11-21T12:30:00+08:00"
+    }
+  ],
+  "venues": [
+    {
+      "venue_id": "V_A",
+      "name": "模拟食堂 A",
+      "location_label": "A 区",
+      "walk_min": {
+        "min": 2,
+        "max": 3
+      },
+      "service_min": {
+        "min": 1,
+        "max": 2
+      },
+      "queue_depth": 4,
+      "throughput_per_min": 2
+    },
+    {
+      "venue_id": "V_B",
+      "name": "模拟食堂 B",
+      "location_label": "B 区",
+      "walk_min": {
+        "min": 2,
+        "max": 3
+      },
+      "service_min": {
+        "min": 1,
+        "max": 2
+      },
+      "queue_depth": 8,
+      "throughput_per_min": 2
+    }
+  ],
+  "dishes": [
+    {
+      "venue_id": "V_A",
+      "dish_id": "D_A_DUCK",
+      "name": "烤鸭饭",
+      "family_id": "duck_rice",
+      "tag": "rice",
+      "w1": 2,
+      "w2": 0,
+      "price_cents": 1600,
+      "ingredients": [
+        "duck",
+        "rice"
+      ],
+      "active": true
+    },
+    {
+      "venue_id": "V_A",
+      "dish_id": "D_A_PORK",
+      "name": "红烧肉饭",
+      "family_id": "pork_rice",
+      "tag": "rice",
+      "w1": 0,
+      "w2": 0,
+      "price_cents": 1500,
+      "ingredients": null,
+      "active": false
+    },
+    {
+      "venue_id": "V_A",
+      "dish_id": "D_A_BEEF",
+      "name": "番茄牛肉饭",
+      "family_id": "beef_rice",
+      "tag": "rice",
+      "w1": 0,
+      "w2": 0,
+      "price_cents": 1800,
+      "ingredients": null,
+      "active": false
+    },
+    {
+      "venue_id": "V_A",
+      "dish_id": "D_A_TOFU",
+      "name": "豆腐饭",
+      "family_id": "tofu_rice",
+      "tag": "light",
+      "w1": 0,
+      "w2": 0,
+      "price_cents": 1050,
+      "ingredients": null,
+      "active": false
+    },
+    {
+      "venue_id": "V_A",
+      "dish_id": "D_A_NOODLE",
+      "name": "茄汁面",
+      "family_id": "noodles",
+      "tag": "light",
+      "w1": 0,
+      "w2": 0,
+      "price_cents": 1100,
+      "ingredients": null,
+      "active": false
+    },
+    {
+      "venue_id": "V_A",
+      "dish_id": "D_A_EGG",
+      "name": "番茄鸡蛋饭",
+      "family_id": "egg_rice",
+      "tag": "rice",
+      "w1": 0,
+      "w2": 0,
+      "price_cents": 1150,
+      "ingredients": null,
+      "active": false
+    },
+    {
+      "venue_id": "V_A",
+      "dish_id": "D_A_FISH",
+      "name": "鱼排饭",
+      "family_id": "fish_rice",
+      "tag": "rice",
+      "w1": 0,
+      "w2": 0,
+      "price_cents": 1700,
+      "ingredients": null,
+      "active": false
+    },
+    {
+      "venue_id": "V_A",
+      "dish_id": "D_A_VEG",
+      "name": "时蔬饭",
+      "family_id": "vegetable_rice",
+      "tag": "light",
+      "w1": 0,
+      "w2": 0,
+      "price_cents": 1000,
+      "ingredients": null,
+      "active": false
+    },
+    {
+      "venue_id": "V_B",
+      "dish_id": "D_B_CHICKEN",
+      "name": "鸡腿饭",
+      "family_id": "chicken_rice",
+      "tag": "rice",
+      "w1": 12,
+      "w2": 12,
+      "price_cents": 1300,
+      "ingredients": [
+        "chicken",
+        "rice"
+      ],
+      "active": true
+    },
+    {
+      "venue_id": "V_B",
+      "dish_id": "D_B_PORK",
+      "name": "卤肉饭",
+      "family_id": "pork_rice",
+      "tag": "rice",
+      "w1": 0,
+      "w2": 0,
+      "price_cents": 1400,
+      "ingredients": null,
+      "active": false
+    },
+    {
+      "venue_id": "V_B",
+      "dish_id": "D_B_BEEF",
+      "name": "牛肉面",
+      "family_id": "noodles",
+      "tag": "light",
+      "w1": 0,
+      "w2": 0,
+      "price_cents": 1700,
+      "ingredients": null,
+      "active": false
+    },
+    {
+      "venue_id": "V_B",
+      "dish_id": "D_B_TOFU",
+      "name": "麻婆豆腐饭",
+      "family_id": "tofu_rice",
+      "tag": "rice",
+      "w1": 0,
+      "w2": 0,
+      "price_cents": 1100,
+      "ingredients": null,
+      "active": false
+    },
+    {
+      "venue_id": "V_B",
+      "dish_id": "D_B_NOODLE",
+      "name": "葱油面",
+      "family_id": "noodles",
+      "tag": "light",
+      "w1": 0,
+      "w2": 0,
+      "price_cents": 950,
+      "ingredients": null,
+      "active": false
+    },
+    {
+      "venue_id": "V_B",
+      "dish_id": "D_B_EGG",
+      "name": "蛋炒饭",
+      "family_id": "egg_rice",
+      "tag": "rice",
+      "w1": 0,
+      "w2": 0,
+      "price_cents": 1050,
+      "ingredients": null,
+      "active": false
+    },
+    {
+      "venue_id": "V_B",
+      "dish_id": "D_B_FISH",
+      "name": "鱼片饭",
+      "family_id": "fish_rice",
+      "tag": "rice",
+      "w1": 0,
+      "w2": 0,
+      "price_cents": 1550,
+      "ingredients": null,
+      "active": false
+    },
+    {
+      "venue_id": "V_B",
+      "dish_id": "D_B_VEG",
+      "name": "菌菇饭",
+      "family_id": "vegetable_rice",
+      "tag": "light",
+      "w1": 0,
+      "w2": 0,
+      "price_cents": 1000,
+      "ingredients": null,
+      "active": false
+    }
+  ],
+  "ingredient_keys": [
+    "duck",
+    "chicken",
+    "rice"
+  ],
+  "allergen_keys": [
+    "peanut"
+  ],
+  "taste_tags": [
+    "rice",
+    "light"
+  ],
+  "w2_duck_max_portions": 8,
+  "w2_duck_ingredient_portions": 3,
+  "w2_venue_a_prep_portions": 4,
+  "demand_seed": {
+    "dish_id": "D_A_DUCK",
+    "preferred": 4,
+    "intended": 5,
+    "dined": 3
+  },
+  "scenarios": [
+    {
+      "scenario_id": "CLOSED_LOOP",
+      "queue_override": null,
+      "unknown_allergens_dish_id": null
+    },
+    {
+      "scenario_id": "TIME_PRESSURE",
+      "queue_override": {
+        "venue_id": "V_A",
+        "queue_depth": 16,
+        "throughput_per_min": 2
+      },
+      "unknown_allergens_dish_id": null
+    },
+    {
+      "scenario_id": "PREFERENCE_CONFLICT",
+      "queue_override": {
+        "venue_id": "V_A",
+        "queue_depth": 24,
+        "throughput_per_min": 2
+      },
+      "unknown_allergens_dish_id": "D_A_DUCK"
+    }
+  ]
+}

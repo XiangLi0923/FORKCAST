@@ -1,0 +1,34 @@
+{
+  "mcpServers": {
+    "forkcast-external": {
+      "command": "<ABSOLUTE_PATH_TO_PYTHON_EXE>",
+      "args": ["-B", "-m", "forkcast.mcp_server"],
+      "cwd": "<ABSOLUTE_PATH_TO_FORKCAST_PROJECT>",
+      "env": {
+        "FORKCAST_DATABASE": "<SHARED_ABSOLUTE_SQLITE_PATH>",
+        "FORKCAST_DATA_MODE": "SIMULATION",
+        "FORKCAST_MCP_TOKEN": "<EXTERNAL_AGENT_HOST_CREDENTIAL>"
+      }
+    },
+    "forkcast-student": {
+      "command": "<ABSOLUTE_PATH_TO_PYTHON_EXE>",
+      "args": ["-B", "-m", "forkcast.mcp_server"],
+      "cwd": "<ABSOLUTE_PATH_TO_FORKCAST_PROJECT>",
+      "env": {
+        "FORKCAST_DATABASE": "<SHARED_ABSOLUTE_SQLITE_PATH>",
+        "FORKCAST_DATA_MODE": "SIMULATION",
+        "FORKCAST_MCP_TOKEN": "<STUDENT_HOST_CREDENTIAL>"
+      }
+    },
+    "forkcast-ops": {
+      "command": "<ABSOLUTE_PATH_TO_PYTHON_EXE>",
+      "args": ["-B", "-m", "forkcast.mcp_server"],
+      "cwd": "<ABSOLUTE_PATH_TO_FORKCAST_PROJECT>",
+      "env": {
+        "FORKCAST_DATABASE": "<SHARED_ABSOLUTE_SQLITE_PATH>",
+        "FORKCAST_DATA_MODE": "SIMULATION",
+        "FORKCAST_MCP_TOKEN": "<OPS_HOST_CREDENTIAL>"
+      }
+    }
+  }
+}

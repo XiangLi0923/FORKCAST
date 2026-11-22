@@ -1,0 +1,110 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>FORKCAST 食序 · 今日午餐</title>
+  <link rel="stylesheet" href="/student-assets/student.css">
+  <script type="module" src="/student-assets/student.mjs"></script>
+</head>
+<body>
+  <header class="top">
+    <a class="brand" href="/"><b>FORKCAST</b><span>食序</span></a>
+    <nav aria-label="页面导航">
+      <a href="#today">今日推荐</a><a href="#needs">当次需求</a><a href="#privacy">分享授权</a>
+    </nav>
+    <span class="mode">SIMULATION</span>
+  </header>
+  <main id="today">
+    <section class="intro">
+      <div><h1>今天中午吃什么？</h1><p>看一份今天可行的午餐，也可以按当下需求再选。</p></div>
+      <div class="run-info"><span id="scene">校园模拟场景</span><strong id="clock">连接中</strong><span id="revision"></span></div>
+    </section>
+    <div class="banner" id="network" role="status" hidden></div>
+    <div class="layout">
+      <div class="main-column">
+        <section aria-label="当前餐食推荐">
+          <div class="section-title"><h2>今天的推荐</h2><span id="loading" role="status">正在生成推荐…</span></div>
+          <div id="decision-errors" class="banner" role="status" hidden></div>
+          <div id="changes" class="banner" role="status" hidden></div>
+          <div id="cards" class="cards"></div>
+          <p class="caution" id="global-warnings" hidden></p>
+        </section>
+        <section class="panel feedback" id="feedback">
+          <h2>我的午餐</h2>
+          <p id="intent" class="intent" aria-live="polite">还没有选择。</p>
+          <button type="button" id="clear-intent" class="text-button" data-action hidden>清除原意向</button>
+          <div class="meal-entry">
+            <label for="meal-report">实际吃了什么？</label>
+            <select id="meal-report" aria-label="实际吃的餐次" data-action></select>
+            <div class="buttons">
+              <button type="button" id="dined" class="button secondary" data-action>已吃所选餐次</button>
+              <button type="button" id="not-dined" class="button secondary" data-action>没有吃</button>
+            </div>
+          </div>
+          <p class="quiet">打算去吃与实际用餐分开记录。</p>
+          <div id="feedback-status" class="form-status" role="status"></div>
+        </section>
+      </div>
+      <aside class="side-column">
+        <section class="panel" id="needs">
+          <h2>当次需求</h2>
+          <form id="needs-form">
+            <fieldset class="profiles"><legend>现在更在意什么？</legend>
+              <label><input type="radio" name="profile" value="DEFAULT" checked><span>按默认推荐</span></label>
+              <label><input type="radio" name="profile" value="FAST"><span>赶时间</span></label>
+              <label><input type="radio" name="profile" value="VALUE"><span>控预算</span></label>
+              <label><input type="radio" name="profile" value="EXPLORE"><span>探索新口味</span></label>
+            </fieldset>
+            <div class="inputs">
+              <label for="budget">预算上限（元）<input id="budget" type="number" inputmode="decimal" min="0" max="1000" step=".01" placeholder="不限"></label>
+              <label for="minutes">可用时间（分钟）<input id="minutes" type="number" inputmode="numeric" min="0" max="180" step="1" placeholder="不限"></label>
+            </div>
+            <fieldset class="choices"><legend>口味偏好</legend>
+              <label><input type="checkbox" name="taste" value="rice"> 米饭</label>
+              <label><input type="checkbox" name="taste" value="light"> 清淡</label>
+            </fieldset>
+            <details class="requirements">
+              <summary>饮食限制</summary>
+              <fieldset class="choices"><legend>不吃的食材</legend>
+                <label><input type="checkbox" name="ingredients" value="duck"> 鸭肉</label>
+                <label><input type="checkbox" name="ingredients" value="chicken"> 鸡肉</label>
+                <label><input type="checkbox" name="ingredients" value="rice"> 大米</label>
+              </fieldset>
+              <fieldset class="choices"><legend>排除的过敏原</legend>
+                <label><input type="checkbox" name="allergens" value="peanut"> 花生</label>
+              </fieldset>
+            </details>
+            <label for="wanted">指名想吃<select id="wanted"><option value="">没有指定</option></select></label>
+            <button type="button" class="text-button" id="record-preference" data-action>记录为本次想吃</button>
+            <button class="button primary" id="apply-needs" type="submit" data-action>更新推荐</button>
+          </form>
+        </section>
+        <section class="panel" id="privacy">
+          <h2>数据分享</h2>
+          <label class="share"><input id="share" type="checkbox" data-action> 同意分享运营需求信号</label>
+          <p class="quiet" id="session-info">正在建立匿名试用会话。</p>
+          <p class="quiet">授权后的演示会话可贡献想吃、打算吃和自报用餐信号，用于后续餐饮运营分析。不分享仍可使用推荐和反馈。撤回会排除旧贡献；重开仅使用之后的新声明。</p>
+          <details>
+            <summary>使用一次性凭据加入演示</summary>
+            <form id="demo-form">
+              <label for="ticket">演示凭据<input id="ticket" type="password" autocomplete="off" maxlength="512" required></label>
+              <button type="submit" class="button secondary" data-action>加入演示</button>
+            </form>
+          </details>
+          <div id="privacy-status" class="form-status" role="status"></div>
+        </section>
+      </aside>
+    </div>
+    <dialog id="agent-receipt" class="panel" aria-labelledby="agent-receipt-title">
+      <h2 id="agent-receipt-title">授权本地 Agent 记录反馈</h2>
+      <p>将参数交给本人已绑定的本地宿主。授权最多有效 120 秒。</p>
+      <textarea aria-label="submit_feedback 调用参数" rows="8" cols="48" readonly></textarea>
+      <button class="secondary" type="button" data-copy-receipt>复制参数</button>
+      <p class="form-status" role="status"></p>
+      <form method="dialog"><button class="secondary">关闭</button></form>
+    </dialog>
+    <footer>食序 FORKCAST · 模拟数据与用餐时间估计仅用于试用</footer>
+  </main>
+</body>
+</html>

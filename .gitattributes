@@ -1,0 +1,6 @@
+# Preserve approved specification checksums across checkouts.
+/CODEX_DEV_PLAN.md -text
+/DATA_SCHEMA.md -text
+/DECISION_ENGINE_SPEC.md -text
+/MCP_API_SPEC.md -text
+/SIMULATION_SPEC.md -text

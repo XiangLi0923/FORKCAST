@@ -1,0 +1,4649 @@
+{
+  "tools": [
+    {
+      "name": "get_dining_options",
+      "description": "Read a visible SIMULATION menu and supply snapshot.",
+      "inputSchema": {
+        "additionalProperties": false,
+        "properties": {
+          "run_id": {
+            "maxLength": 64,
+            "minLength": 1,
+            "pattern": "^[A-Za-z0-9._-]+$",
+            "title": "Run Id",
+            "type": "string"
+          },
+          "snapshot_id": {
+            "title": "Snapshot Id",
+            "maxLength": 64,
+            "minLength": 1,
+            "pattern": "^[A-Za-z0-9._-]+$",
+            "type": "string"
+          },
+          "venue_id": {
+            "title": "Venue Id",
+            "maxLength": 64,
+            "minLength": 1,
+            "pattern": "^[A-Za-z0-9._-]+$",
+            "type": "string"
+          },
+          "cursor": {
+            "title": "Cursor",
+            "pattern": "^[A-Za-z0-9_-]{16,512}$",
+            "type": "string"
+          },
+          "limit": {
+            "title": "Limit",
+            "maximum": 50,
+            "minimum": 1,
+            "type": "integer",
+            "default": 20
+          }
+        },
+        "required": [
+          "run_id"
+        ],
+        "title": "DiningQuery",
+        "type": "object"
+      },
+      "outputSchema": {
+        "type": "object",
+        "$defs": {
+          "BundleItem": {
+            "additionalProperties": false,
+            "properties": {
+              "dish_id": {
+                "maxLength": 64,
+                "minLength": 1,
+                "pattern": "^[A-Za-z0-9._-]+$",
+                "title": "Dish Id",
+                "type": "string"
+              },
+              "portions": {
+                "maximum": 9223372036854775807,
+                "minimum": 1,
+                "title": "Portions",
+                "type": "integer"
+              }
+            },
+            "required": [
+              "dish_id",
+              "portions"
+            ],
+            "title": "BundleItem",
+            "type": "object"
+          },
+          "BundleProjection": {
+            "additionalProperties": false,
+            "properties": {
+              "bundle_id": {
+                "maxLength": 64,
+                "minLength": 1,
+                "pattern": "^[A-Za-z0-9._-]+$",
+                "title": "Bundle Id",
+                "type": "string"
+              },
+              "venue_id": {
+                "maxLength": 64,
+                "minLength": 1,
+                "pattern": "^[A-Za-z0-9._-]+$",
+                "title": "Venue Id",
+                "type": "string"
+              },
+              "label": {
+                "title": "Label",
+                "type": "string"
+              },
+              "items": {
+                "items": {
+                  "$ref": "#/$defs/BundleItem"
+                },
+                "title": "Items",
+                "type": "array"
+              },
+              "anchor_dish_id": {
+                "maxLength": 64,
+                "minLength": 1,
+                "pattern": "^[A-Za-z0-9._-]+$",
+                "title": "Anchor Dish Id",
+                "type": "string"
+              },
+              "price_cents": {
+                "anyOf": [
+                  {
+                    "maximum": 9223372036854775807,
+                    "minimum": 0,
+                    "type": "integer"
+                  },
+                  {
+                    "type": "null"
+                  }
+                ],
+                "title": "Price Cents"
+              },
+              "available_bundle_portions": {
+                "anyOf": [
+                  {
+                    "maximum": 9223372036854775807,
+                    "minimum": 0,
+                    "type": "integer"
+                  },
+                  {
+                    "type": "null"
+                  }
+                ],
+                "title": "Available Bundle Portions"
+              },
+              "supply_state": {
+                "enum": [
+                  "AVAILABLE",
+                  "SOLD_OUT",
+                  "UNAVAILABLE",
+                  "UNKNOWN"
+                ],
+                "title": "Supply State",
+                "type": "string"
+              },
+              "evidence": {
+                "items": {
+                  "$ref": "#/$defs/Evidence"
+                },
+                "title": "Evidence",
+                "type": "array"
+              }
+            },
+            "required": [
+              "bundle_id",
+              "venue_id",
+              "label",
+              "items",
+              "anchor_dish_id",
+              "price_cents",
+              "available_bundle_portions",
+              "supply_state",
+              "evidence"
+            ],
+            "title": "BundleProjection",
+            "type": "object"
+          },
+          "Evidence": {
+            "additionalProperties": false,
+            "properties": {
+              "code": {
+                "enum": [
+                  "BUDGET_FIT",
+                  "TIME_FIT",
+                  "TASTE_MATCH",
+                  "NEW_FAMILY",
+                  "LOWER_QUEUE",
+                  "RESTRICTIONS_NOT_DECLARED",
+                  "ORIGIN_ASSUMED",
+                  "SIMULATION_DATA",
+                  "LONG_QUEUE",
+                  "LOW_STOCK",
+                  "PRICE_UNKNOWN",
+                  "STALE_FACT",
+                  "VENUE_CLOSED",
+                  "OUTSIDE_SERVICE_WINDOW",
+                  "HANDOFF_TIME_UNKNOWN",
+                  "OVER_BUDGET",
+                  "OVER_TIME",
+                  "RESTRICTED_INGREDIENT",
+                  "RESTRICTED_ALLERGEN",
+                  "RESTRICTION_UNVERIFIED",
+                  "SOLD_OUT",
+                  "UNAVAILABLE",
+                  "INSUFFICIENT_STOCK",
+                  "SUPPLY_UNVERIFIED",
+                  "REQUESTED_BUNDLE_NOT_REGISTERED",
+                  "QUEUE_CHANGED",
+                  "SUPPLY_RESTORED",
+                  "SERVICE_WINDOW_CHANGED",
+                  "RANKING_CHANGED"
+                ],
+                "title": "Code",
+                "type": "string"
+              },
+              "entity_id": {
+                "anyOf": [
+                  {
+                    "maxLength": 64,
+                    "minLength": 1,
+                    "pattern": "^[A-Za-z0-9._-]+$",
+                    "type": "string"
+                  },
+                  {
+                    "type": "null"
+                  }
+                ],
+                "title": "Entity Id"
+              },
+              "field": {
+                "anyOf": [
+                  {
+                    "type": "string"
+                  },
+                  {
+                    "type": "null"
+                  }
+                ],
+                "title": "Field"
+              },
+              "source_kind": {
+                "enum": [
+                  "AUTHORIZED",
+                  "PUBLIC",
+                  "ESTIMATED",
+                  "SYNTHETIC",
+                  "UNKNOWN"
+                ],
+                "title": "Source Kind",
+                "type": "string"
+              },
+              "source_ref": {
+                "anyOf": [
+                  {
+                    "type": "string"
+                  },
+                  {
+                    "type": "null"
+                  }
+                ],
+                "title": "Source Ref"
+              },
+              "as_of": {
+                "anyOf": [
+                  {
+                    "format": "date-time",
+                    "type": "string"
+                  },
+                  {
+                    "type": "null"
+                  }
+                ],
+                "title": "As Of"
+              },
+              "freshness": {
+                "enum": [
+                  "FRESH",
+                  "STALE",
+                  "UNKNOWN"
+                ],
+                "title": "Freshness",
+                "type": "string"
+              },
+              "value": {
+                "anyOf": [
+                  {
+                    "type": "boolean"
+                  },
+                  {
+                    "type": "integer"
+                  },
+                  {
+                    "type": "number"
+                  },
+                  {
+                    "type": "string"
+                  },
+                  {
+                    "items": {
+                      "type": "string"
+                    },
+                    "type": "array"
+                  },
+                  {
+                    "$ref": "#/$defs/IntRange"
+                  }
+                ],
+                "title": "Value"
+              }
+            },
+            "required": [
+              "code",
+              "entity_id",
+              "field",
+              "source_kind",
+              "source_ref",
+              "as_of",
+              "freshness"
+            ],
+            "title": "Evidence",
+            "type": "object"
+          },
+          "Fact_IntRange_": {
+            "additionalProperties": false,
+            "properties": {
+              "value": {
+                "anyOf": [
+                  {
+                    "$ref": "#/$defs/IntRange"
+                  },
+                  {
+                    "type": "null"
+                  }
+                ]
+              },
+              "source_kind": {
+                "enum": [
+                  "AUTHORIZED",
+                  "PUBLIC",
+                  "ESTIMATED",
+                  "SYNTHETIC",
+                  "UNKNOWN"
+                ],
+                "title": "Source Kind",
+                "type": "string"
+              },
+              "source_ref": {
+                "anyOf": [
+                  {
+                    "type": "string"
+                  },
+                  {
+                    "type": "null"
+                  }
+                ],
+                "title": "Source Ref"
+              },
+              "as_of": {
+                "anyOf": [
+                  {
+                    "format": "date-time",
+                    "type": "string"
+                  },
+                  {
+                    "type": "null"
+                  }
+                ],
+                "title": "As Of"
+              },
+              "valid_until": {
+                "anyOf": [
+                  {
+                    "format": "date-time",
+                    "type": "string"
+                  },
+                  {
+                    "type": "null"
+                  }
+                ],
+                "title": "Valid Until"
+              },
+              "confidence": {
+                "enum": [
+                  "HIGH",
+                  "MEDIUM",
+                  "LOW",
+                  "UNKNOWN"
+                ],
+                "title": "Confidence",
+                "type": "string"
+              }
+            },
+            "required": [
+              "value",
+              "source_kind",
+              "source_ref",
+              "as_of",
+              "valid_until",
+              "confidence"
+            ],
+            "title": "Fact[IntRange]",
+            "type": "object"
+          },
+          "Fact_Literal__OPEN____CLOSED___": {
+            "additionalProperties": false,
+            "properties": {
+              "value": {
+                "anyOf": [
+                  {
+                    "enum": [
+                      "OPEN",
+                      "CLOSED"
+                    ],
+                    "type": "string"
+                  },
+                  {
+                    "type": "null"
+                  }
+                ],
+                "title": "Value"
+              },
+              "source_kind": {
+                "enum": [
+                  "AUTHORIZED",
+                  "PUBLIC",
+                  "ESTIMATED",
+                  "SYNTHETIC",
+                  "UNKNOWN"
+                ],
+                "title": "Source Kind",
+                "type": "string"
+              },
+              "source_ref": {
+                "anyOf": [
+                  {
+                    "type": "string"
+                  },
+                  {
+                    "type": "null"
+                  }
+                ],
+                "title": "Source Ref"
+              },
+              "as_of": {
+                "anyOf": [
+                  {
+                    "format": "date-time",
+                    "type": "string"
+                  },
+                  {
+                    "type": "null"
+                  }
+                ],
+                "title": "As Of"
+              },
+              "valid_until": {
+                "anyOf": [
+                  {
+                    "format": "date-time",
+                    "type": "string"
+                  },
+                  {
+                    "type": "null"
+                  }
+                ],
+                "title": "Valid Until"
+              },
+              "confidence": {
+                "enum": [
+                  "HIGH",
+                  "MEDIUM",
+                  "LOW",
+                  "UNKNOWN"
+                ],
+                "title": "Confidence",
+                "type": "string"
+              }
+            },
+            "required": [
+              "value",
+              "source_kind",
+              "source_ref",
+              "as_of",
+              "valid_until",
+              "confidence"
+            ],
+            "title": "Fact[Literal['OPEN', 'CLOSED']]",
+            "type": "object"
+          },
+          "Fact_str_": {
+            "additionalProperties": false,
+            "properties": {
+              "value": {
+                "anyOf": [
+                  {
+                    "type": "string"
+                  },
+                  {
+                    "type": "null"
+                  }
+                ],
+                "title": "Value"
+              },
+              "source_kind": {
+                "enum": [
+                  "AUTHORIZED",
+                  "PUBLIC",
+                  "ESTIMATED",
+                  "SYNTHETIC",
+                  "UNKNOWN"
+                ],
+                "title": "Source Kind",
+                "type": "string"
+              },
+              "source_ref": {
+                "anyOf": [
+                  {
+                    "type": "string"
+                  },
+                  {
+                    "type": "null"
+                  }
+                ],
+                "title": "Source Ref"
+              },
+              "as_of": {
+                "anyOf": [
+                  {
+                    "format": "date-time",
+                    "type": "string"
+                  },
+                  {
+                    "type": "null"
+                  }
+                ],
+                "title": "As Of"
+              },
+              "valid_until": {
+                "anyOf": [
+                  {
+                    "format": "date-time",
+                    "type": "string"
+                  },
+                  {
+                    "type": "null"
+                  }
+                ],
+                "title": "Valid Until"
+              },
+              "confidence": {
+                "enum": [
+                  "HIGH",
+                  "MEDIUM",
+                  "LOW",
+                  "UNKNOWN"
+                ],
+                "title": "Confidence",
+                "type": "string"
+              }
+            },
+            "required": [
+              "value",
+              "source_kind",
+              "source_ref",
+              "as_of",
+              "valid_until",
+              "confidence"
+            ],
+            "title": "Fact[str]",
+            "type": "object"
+          },
+          "Fact_tuple_TimeRange__________": {
+            "additionalProperties": false,
+            "properties": {
+              "value": {
+                "anyOf": [
+                  {
+                    "items": {
+                      "$ref": "#/$defs/TimeRange"
+                    },
+                    "type": "array"
+                  },
+                  {
+                    "type": "null"
+                  }
+                ],
+                "title": "Value"
+              },
+              "source_kind": {
+                "enum": [
+                  "AUTHORIZED",
+                  "PUBLIC",
+                  "ESTIMATED",
+                  "SYNTHETIC",
+                  "UNKNOWN"
+                ],
+                "title": "Source Kind",
+                "type": "string"
+              },
+              "source_ref": {
+                "anyOf": [
+                  {
+                    "type": "string"
+                  },
+                  {
+                    "type": "null"
+                  }
+                ],
+                "title": "Source Ref"
+              },
+              "as_of": {
+                "anyOf": [
+                  {
+                    "format": "date-time",
+                    "type": "string"
+                  },
+                  {
+                    "type": "null"
+                  }
+                ],
+                "title": "As Of"
+              },
+              "valid_until": {
+                "anyOf": [
+                  {
+                    "format": "date-time",
+                    "type": "string"
+                  },
+                  {
+                    "type": "null"
+                  }
+                ],
+                "title": "Valid Until"
+              },
+              "confidence": {
+                "enum": [
+                  "HIGH",
+                  "MEDIUM",
+                  "LOW",
+                  "UNKNOWN"
+                ],
+                "title": "Confidence",
+                "type": "string"
+              }
+            },
+            "required": [
+              "value",
+              "source_kind",
+              "source_ref",
+              "as_of",
+              "valid_until",
+              "confidence"
+            ],
+            "title": "Fact[tuple[TimeRange, ...]]",
+            "type": "object"
+          },
+          "IntRange": {
+            "additionalProperties": false,
+            "properties": {
+              "min": {
+                "maximum": 9223372036854775807,
+                "minimum": 0,
+                "title": "Min",
+                "type": "integer"
+              },
+              "max": {
+                "maximum": 9223372036854775807,
+                "minimum": 0,
+                "title": "Max",
+                "type": "integer"
+              }
+            },
+            "required": [
+              "min",
+              "max"
+            ],
+            "title": "IntRange",
+            "type": "object"
+          },
+          "TimeRange": {
+            "additionalProperties": false,
+            "properties": {
+              "starts_at": {
+                "format": "date-time",
+                "title": "Starts At",
+                "type": "string"
+              },
+              "ends_at": {
+                "format": "date-time",
+                "title": "Ends At",
+                "type": "string"
+              }
+            },
+            "required": [
+              "starts_at",
+              "ends_at"
+            ],
+            "title": "TimeRange",
+            "type": "object"
+          },
+          "VenueProjection": {
+            "additionalProperties": false,
+            "properties": {
+              "venue_id": {
+                "maxLength": 64,
+                "minLength": 1,
+                "pattern": "^[A-Za-z0-9._-]+$",
+                "title": "Venue Id",
+                "type": "string"
+              },
+              "name": {
+                "$ref": "#/$defs/Fact_str_"
+              },
+              "location_label": {
+                "$ref": "#/$defs/Fact_str_"
+              },
+              "opening_hours": {
+                "$ref": "#/$defs/Fact_tuple_TimeRange__________"
+              },
+              "service_status": {
+                "$ref": "#/$defs/Fact_Literal__OPEN____CLOSED___"
+              },
+              "queue_min": {
+                "$ref": "#/$defs/Fact_IntRange_"
+              }
+            },
+            "required": [
+              "venue_id",
+              "name",
+              "location_label",
+              "opening_hours",
+              "service_status",
+              "queue_min"
+            ],
+            "title": "VenueProjection",
+            "type": "object"
+          },
+          "SnapshotRef": {
+            "additionalProperties": false,
+            "properties": {
+              "run_id": {
+                "maxLength": 64,
+                "minLength": 1,
+                "pattern": "^[A-Za-z0-9._-]+$",
+                "title": "Run Id",
+                "type": "string"
+              },
+              "snapshot_id": {
+                "maxLength": 64,
+                "minLength": 1,
+                "pattern": "^[A-Za-z0-9._-]+$",
+                "title": "Snapshot Id",
+                "type": "string"
+              },
+              "revision": {
+                "maximum": 9223372036854775807,
+                "minimum": 1,
+                "title": "Revision",
+                "type": "integer"
+              },
+              "clock_at": {
+                "format": "date-time",
+                "title": "Clock At",
+                "type": "string"
+              },
+              "data_mode": {
+                "enum": [
+                  "SIMULATION",
+                  "LIVE"
+                ],
+                "title": "Data Mode",
+                "type": "string"
+              },
+              "catalog_version": {
+                "maxLength": 64,
+                "minLength": 1,
+                "pattern": "^[A-Za-z0-9._-]+$",
+                "title": "Catalog Version",
+                "type": "string"
+              },
+              "schema_version": {
+                "const": "0.3",
+                "default": "0.3",
+                "title": "Schema Version",
+                "type": "string"
+              }
+            },
+            "required": [
+              "run_id",
+              "snapshot_id",
+              "revision",
+              "clock_at",
+              "data_mode",
+              "catalog_version",
+              "schema_version"
+            ],
+            "title": "SnapshotRef",
+            "type": "object"
+          }
+        },
+        "oneOf": [
+          {
+            "type": "object",
+            "properties": {
+              "schema_version": {
+                "const": "0.3"
+              },
+              "ok": {
+                "const": true
+              },
+              "data_mode": {
+                "const": "SIMULATION"
+              },
+              "snapshot": {
+                "$ref": "#/$defs/SnapshotRef"
+              },
+              "data": {
+                "additionalProperties": false,
+                "properties": {
+                  "venues": {
+                    "items": {
+                      "$ref": "#/$defs/VenueProjection"
+                    },
+                    "title": "Venues",
+                    "type": "array"
+                  },
+                  "options": {
+                    "items": {
+                      "$ref": "#/$defs/BundleProjection"
+                    },
+                    "title": "Options",
+                    "type": "array"
+                  },
+                  "next_cursor": {
+                    "anyOf": [
+                      {
+                        "pattern": "^[A-Za-z0-9_-]{16,512}$",
+                        "type": "string"
+                      },
+                      {
+                        "type": "null"
+                      }
+                    ],
+                    "title": "Next Cursor"
+                  }
+                },
+                "required": [
+                  "venues",
+                  "options",
+                  "next_cursor"
+                ],
+                "title": "DiningOptions",
+                "type": "object"
+              }
+            },
+            "required": [
+              "schema_version",
+              "ok",
+              "data_mode",
+              "snapshot",
+              "data"
+            ],
+            "additionalProperties": false
+          },
+          {
+            "type": "object",
+            "properties": {
+              "schema_version": {
+                "const": "0.3"
+              },
+              "ok": {
+                "const": false
+              },
+              "data_mode": {
+                "anyOf": [
+                  {
+                    "const": "SIMULATION"
+                  },
+                  {
+                    "type": "null"
+                  }
+                ]
+              },
+              "snapshot": {
+                "anyOf": [
+                  {
+                    "$ref": "#/$defs/SnapshotRef"
+                  },
+                  {
+                    "type": "null"
+                  }
+                ]
+              },
+              "error": {
+                "type": "object",
+                "properties": {
+                  "code": {
+                    "enum": [
+                      "INVALID_INPUT",
+                      "UNAUTHENTICATED",
+                      "FORBIDDEN",
+                      "CONFIRMATION_REQUIRED",
+                      "MODE_DISABLED",
+                      "NOT_FOUND",
+                      "RUN_REPLACED",
+                      "STALE_SELECTION",
+                      "SNAPSHOT_CONFLICT",
+                      "STALE_PROPOSAL",
+                      "OPS_ALREADY_CONFIRMED",
+                      "IDEMPOTENCY_CONFLICT",
+                      "RATE_LIMITED",
+                      "DEPENDENCY_UNAVAILABLE",
+                      "INTERNAL_ERROR"
+                    ]
+                  },
+                  "message": {
+                    "type": "string"
+                  },
+                  "retryable": {
+                    "type": "boolean"
+                  },
+                  "details": {
+                    "type": "object"
+                  }
+                },
+                "required": [
+                  "code",
+                  "message",
+                  "retryable"
+                ],
+                "additionalProperties": false,
+                "allOf": [
+                  {
+                    "if": {
+                      "properties": {
+                        "code": {
+                          "const": "INVALID_INPUT"
+                        }
+                      }
+                    },
+                    "then": {
+                      "properties": {
+                        "details": {
+                          "type": "object",
+                          "properties": {
+                            "field": {
+                              "type": "string"
+                            }
+                          },
+                          "required": [
+                            "field"
+                          ],
+                          "additionalProperties": false
+                        }
+                      }
+                    }
+                  },
+                  {
+                    "if": {
+                      "properties": {
+                        "code": {
+                          "const": "RATE_LIMITED"
+                        }
+                      }
+                    },
+                    "then": {
+                      "properties": {
+                        "details": {
+                          "type": "object",
+                          "properties": {
+                            "retry_after_seconds": {
+                              "type": "integer",
+                              "minimum": 1
+                            }
+                          },
+                          "required": [
+                            "retry_after_seconds"
+                          ],
+                          "additionalProperties": false
+                        }
+                      }
+                    }
+                  },
+                  {
+                    "if": {
+                      "properties": {
+                        "code": {
+                          "const": "INTERNAL_ERROR"
+                        }
+                      }
+                    },
+                    "then": {
+                      "properties": {
+                        "details": {
+                          "type": "object",
+                          "properties": {
+                            "trace_id": {
+                              "type": "string",
+                              "pattern": "^[A-Za-z0-9._-]{1,64}$"
+                            }
+                          },
+                          "required": [
+                            "trace_id"
+                          ],
+                          "additionalProperties": false
+                        }
+                      }
+                    }
+                  },
+                  {
+                    "if": {
+                      "properties": {
+                        "code": {
+                          "not": {
+                            "enum": [
+                              "INVALID_INPUT",
+                              "RATE_LIMITED",
+                              "INTERNAL_ERROR"
+                            ]
+                          }
+                        }
+                      }
+                    },
+                    "then": {
+                      "not": {
+                        "required": [
+                          "details"
+                        ]
+                      }
+                    }
+                  }
+                ]
+              }
+            },
+            "required": [
+              "schema_version",
+              "ok",
+              "data_mode",
+              "snapshot",
+              "error"
+            ],
+            "additionalProperties": false
+          }
+        ]
+      }
+    },
+    {
+      "name": "recommend_meal",
+      "description": "Compute and save a personal recommendation without feedback.",
+      "inputSchema": {
+        "$defs": {
+          "Constraints": {
+            "additionalProperties": false,
+            "properties": {
+              "budget_max_cents": {
+                "title": "Budget Max Cents",
+                "maximum": 100000,
+                "minimum": 0,
+                "type": "integer"
+              },
+              "time_budget_min": {
+                "title": "Time Budget Min",
+                "maximum": 180,
+                "minimum": 0,
+                "type": "integer"
+              },
+              "avoid_ingredients": {
+                "default": [],
+                "items": {
+                  "maxLength": 64,
+                  "minLength": 1,
+                  "pattern": "^[A-Za-z0-9._-]+$",
+                  "type": "string"
+                },
+                "maxLength": 20,
+                "title": "Avoid Ingredients",
+                "type": "array"
+              },
+              "avoid_allergens": {
+                "default": [],
+                "items": {
+                  "maxLength": 64,
+                  "minLength": 1,
+                  "pattern": "^[A-Za-z0-9._-]+$",
+                  "type": "string"
+                },
+                "maxLength": 20,
+                "title": "Avoid Allergens",
+                "type": "array"
+              }
+            },
+            "title": "Constraints",
+            "type": "object"
+          },
+          "DecisionRequest": {
+            "additionalProperties": false,
+            "properties": {
+              "constraints": {
+                "$ref": "#/$defs/Constraints"
+              },
+              "preferences": {
+                "$ref": "#/$defs/Preferences"
+              },
+              "origin_zone_id": {
+                "default": "DEMO_DEFAULT",
+                "maxLength": 64,
+                "minLength": 1,
+                "pattern": "^[A-Za-z0-9._-]+$",
+                "title": "Origin Zone Id",
+                "type": "string"
+              },
+              "max_options": {
+                "default": 2,
+                "maximum": 4,
+                "minimum": 1,
+                "title": "Max Options",
+                "type": "integer"
+              }
+            },
+            "title": "DecisionRequest",
+            "type": "object"
+          },
+          "Preferences": {
+            "additionalProperties": false,
+            "properties": {
+              "taste_tags": {
+                "default": [],
+                "items": {
+                  "maxLength": 64,
+                  "minLength": 1,
+                  "pattern": "^[A-Za-z0-9._-]+$",
+                  "type": "string"
+                },
+                "maxLength": 10,
+                "title": "Taste Tags",
+                "type": "array"
+              },
+              "requested_dish_id": {
+                "title": "Requested Dish Id",
+                "maxLength": 64,
+                "minLength": 1,
+                "pattern": "^[A-Za-z0-9._-]+$",
+                "type": "string"
+              },
+              "profile": {
+                "default": "DEFAULT",
+                "enum": [
+                  "DEFAULT",
+                  "FAST",
+                  "VALUE",
+                  "EXPLORE"
+                ],
+                "title": "Profile",
+                "type": "string"
+              },
+              "recent_family_ids": {
+                "default": [],
+                "items": {
+                  "maxLength": 64,
+                  "minLength": 1,
+                  "pattern": "^[A-Za-z0-9._-]+$",
+                  "type": "string"
+                },
+                "maxLength": 5,
+                "title": "Recent Family Ids",
+                "type": "array"
+              },
+              "nutrition_goal": {
+                "title": "Nutrition Goal",
+                "const": "LIGHT",
+                "type": "string"
+              }
+            },
+            "title": "Preferences",
+            "type": "object"
+          }
+        },
+        "additionalProperties": false,
+        "properties": {
+          "run_id": {
+            "maxLength": 64,
+            "minLength": 1,
+            "pattern": "^[A-Za-z0-9._-]+$",
+            "title": "Run Id",
+            "type": "string"
+          },
+          "request": {
+            "$ref": "#/$defs/DecisionRequest"
+          },
+          "snapshot_id": {
+            "title": "Snapshot Id",
+            "maxLength": 64,
+            "minLength": 1,
+            "pattern": "^[A-Za-z0-9._-]+$",
+            "type": "string"
+          }
+        },
+        "required": [
+          "run_id",
+          "request"
+        ],
+        "title": "RecommendRequest",
+        "type": "object"
+      },
+      "outputSchema": {
+        "type": "object",
+        "$defs": {
+          "BundleItem": {
+            "additionalProperties": false,
+            "properties": {
+              "dish_id": {
+                "maxLength": 64,
+                "minLength": 1,
+                "pattern": "^[A-Za-z0-9._-]+$",
+                "title": "Dish Id",
+                "type": "string"
+              },
+              "portions": {
+                "maximum": 9223372036854775807,
+                "minimum": 1,
+                "title": "Portions",
+                "type": "integer"
+              }
+            },
+            "required": [
+              "dish_id",
+              "portions"
+            ],
+            "title": "BundleItem",
+            "type": "object"
+          },
+          "Evidence": {
+            "additionalProperties": false,
+            "properties": {
+              "code": {
+                "enum": [
+                  "BUDGET_FIT",
+                  "TIME_FIT",
+                  "TASTE_MATCH",
+                  "NEW_FAMILY",
+                  "LOWER_QUEUE",
+                  "RESTRICTIONS_NOT_DECLARED",
+                  "ORIGIN_ASSUMED",
+                  "SIMULATION_DATA",
+                  "LONG_QUEUE",
+                  "LOW_STOCK",
+                  "PRICE_UNKNOWN",
+                  "STALE_FACT",
+                  "VENUE_CLOSED",
+                  "OUTSIDE_SERVICE_WINDOW",
+                  "HANDOFF_TIME_UNKNOWN",
+                  "OVER_BUDGET",
+                  "OVER_TIME",
+                  "RESTRICTED_INGREDIENT",
+                  "RESTRICTED_ALLERGEN",
+                  "RESTRICTION_UNVERIFIED",
+                  "SOLD_OUT",
+                  "UNAVAILABLE",
+                  "INSUFFICIENT_STOCK",
+                  "SUPPLY_UNVERIFIED",
+                  "REQUESTED_BUNDLE_NOT_REGISTERED",
+                  "QUEUE_CHANGED",
+                  "SUPPLY_RESTORED",
+                  "SERVICE_WINDOW_CHANGED",
+                  "RANKING_CHANGED"
+                ],
+                "title": "Code",
+                "type": "string"
+              },
+              "entity_id": {
+                "anyOf": [
+                  {
+                    "maxLength": 64,
+                    "minLength": 1,
+                    "pattern": "^[A-Za-z0-9._-]+$",
+                    "type": "string"
+                  },
+                  {
+                    "type": "null"
+                  }
+                ],
+                "title": "Entity Id"
+              },
+              "field": {
+                "anyOf": [
+                  {
+                    "type": "string"
+                  },
+                  {
+                    "type": "null"
+                  }
+                ],
+                "title": "Field"
+              },
+              "source_kind": {
+                "enum": [
+                  "AUTHORIZED",
+                  "PUBLIC",
+                  "ESTIMATED",
+                  "SYNTHETIC",
+                  "UNKNOWN"
+                ],
+                "title": "Source Kind",
+                "type": "string"
+              },
+              "source_ref": {
+                "anyOf": [
+                  {
+                    "type": "string"
+                  },
+                  {
+                    "type": "null"
+                  }
+                ],
+                "title": "Source Ref"
+              },
+              "as_of": {
+                "anyOf": [
+                  {
+                    "format": "date-time",
+                    "type": "string"
+                  },
+                  {
+                    "type": "null"
+                  }
+                ],
+                "title": "As Of"
+              },
+              "freshness": {
+                "enum": [
+                  "FRESH",
+                  "STALE",
+                  "UNKNOWN"
+                ],
+                "title": "Freshness",
+                "type": "string"
+              },
+              "value": {
+                "anyOf": [
+                  {
+                    "type": "boolean"
+                  },
+                  {
+                    "type": "integer"
+                  },
+                  {
+                    "type": "number"
+                  },
+                  {
+                    "type": "string"
+                  },
+                  {
+                    "items": {
+                      "type": "string"
+                    },
+                    "type": "array"
+                  },
+                  {
+                    "$ref": "#/$defs/IntRange"
+                  }
+                ],
+                "title": "Value"
+              }
+            },
+            "required": [
+              "code",
+              "entity_id",
+              "field",
+              "source_kind",
+              "source_ref",
+              "as_of",
+              "freshness"
+            ],
+            "title": "Evidence",
+            "type": "object"
+          },
+          "IntRange": {
+            "additionalProperties": false,
+            "properties": {
+              "min": {
+                "maximum": 9223372036854775807,
+                "minimum": 0,
+                "title": "Min",
+                "type": "integer"
+              },
+              "max": {
+                "maximum": 9223372036854775807,
+                "minimum": 0,
+                "title": "Max",
+                "type": "integer"
+              }
+            },
+            "required": [
+              "min",
+              "max"
+            ],
+            "title": "IntRange",
+            "type": "object"
+          },
+          "MealOption": {
+            "additionalProperties": false,
+            "properties": {
+              "bundle_id": {
+                "maxLength": 64,
+                "minLength": 1,
+                "pattern": "^[A-Za-z0-9._-]+$",
+                "title": "Bundle Id",
+                "type": "string"
+              },
+              "venue_id": {
+                "maxLength": 64,
+                "minLength": 1,
+                "pattern": "^[A-Za-z0-9._-]+$",
+                "title": "Venue Id",
+                "type": "string"
+              },
+              "anchor_dish_id": {
+                "maxLength": 64,
+                "minLength": 1,
+                "pattern": "^[A-Za-z0-9._-]+$",
+                "title": "Anchor Dish Id",
+                "type": "string"
+              },
+              "label": {
+                "title": "Label",
+                "type": "string"
+              },
+              "items": {
+                "items": {
+                  "$ref": "#/$defs/BundleItem"
+                },
+                "maxItems": 3,
+                "minItems": 1,
+                "title": "Items",
+                "type": "array"
+              },
+              "price_cents": {
+                "anyOf": [
+                  {
+                    "maximum": 9223372036854775807,
+                    "minimum": 0,
+                    "type": "integer"
+                  },
+                  {
+                    "type": "null"
+                  }
+                ],
+                "title": "Price Cents"
+              },
+              "queue_min": {
+                "anyOf": [
+                  {
+                    "$ref": "#/$defs/IntRange"
+                  },
+                  {
+                    "type": "null"
+                  }
+                ]
+              },
+              "total_time_min": {
+                "anyOf": [
+                  {
+                    "$ref": "#/$defs/IntRange"
+                  },
+                  {
+                    "type": "null"
+                  }
+                ]
+              },
+              "available_bundle_portions": {
+                "anyOf": [
+                  {
+                    "maximum": 9223372036854775807,
+                    "minimum": 0,
+                    "type": "integer"
+                  },
+                  {
+                    "type": "null"
+                  }
+                ],
+                "title": "Available Bundle Portions"
+              },
+              "match_score": {
+                "maximum": 1000,
+                "minimum": 0,
+                "title": "Match Score",
+                "type": "integer"
+              },
+              "data_confidence": {
+                "enum": [
+                  "HIGH",
+                  "MEDIUM",
+                  "LOW",
+                  "UNKNOWN"
+                ],
+                "title": "Data Confidence",
+                "type": "string"
+              },
+              "evidence": {
+                "items": {
+                  "$ref": "#/$defs/Evidence"
+                },
+                "title": "Evidence",
+                "type": "array"
+              },
+              "warnings": {
+                "items": {
+                  "$ref": "#/$defs/Evidence"
+                },
+                "title": "Warnings",
+                "type": "array"
+              }
+            },
+            "required": [
+              "bundle_id",
+              "venue_id",
+              "anchor_dish_id",
+              "label",
+              "items",
+              "price_cents",
+              "queue_min",
+              "total_time_min",
+              "available_bundle_portions",
+              "match_score",
+              "data_confidence",
+              "evidence",
+              "warnings"
+            ],
+            "title": "MealOption",
+            "type": "object"
+          },
+          "SnapshotRef": {
+            "additionalProperties": false,
+            "properties": {
+              "run_id": {
+                "maxLength": 64,
+                "minLength": 1,
+                "pattern": "^[A-Za-z0-9._-]+$",
+                "title": "Run Id",
+                "type": "string"
+              },
+              "snapshot_id": {
+                "maxLength": 64,
+                "minLength": 1,
+                "pattern": "^[A-Za-z0-9._-]+$",
+                "title": "Snapshot Id",
+                "type": "string"
+              },
+              "revision": {
+                "maximum": 9223372036854775807,
+                "minimum": 1,
+                "title": "Revision",
+                "type": "integer"
+              },
+              "clock_at": {
+                "format": "date-time",
+                "title": "Clock At",
+                "type": "string"
+              },
+              "data_mode": {
+                "enum": [
+                  "SIMULATION",
+                  "LIVE"
+                ],
+                "title": "Data Mode",
+                "type": "string"
+              },
+              "catalog_version": {
+                "maxLength": 64,
+                "minLength": 1,
+                "pattern": "^[A-Za-z0-9._-]+$",
+                "title": "Catalog Version",
+                "type": "string"
+              },
+              "schema_version": {
+                "const": "0.3",
+                "default": "0.3",
+                "title": "Schema Version",
+                "type": "string"
+              }
+            },
+            "required": [
+              "run_id",
+              "snapshot_id",
+              "revision",
+              "clock_at",
+              "data_mode",
+              "catalog_version",
+              "schema_version"
+            ],
+            "title": "SnapshotRef",
+            "type": "object"
+          }
+        },
+        "oneOf": [
+          {
+            "type": "object",
+            "properties": {
+              "schema_version": {
+                "const": "0.3"
+              },
+              "ok": {
+                "const": true
+              },
+              "data_mode": {
+                "const": "SIMULATION"
+              },
+              "snapshot": {
+                "$ref": "#/$defs/SnapshotRef"
+              },
+              "data": {
+                "additionalProperties": false,
+                "properties": {
+                  "snapshot": {
+                    "$ref": "#/$defs/SnapshotRef"
+                  },
+                  "rules_version": {
+                    "maxLength": 64,
+                    "minLength": 1,
+                    "pattern": "^[A-Za-z0-9._-]+$",
+                    "title": "Rules Version",
+                    "type": "string"
+                  },
+                  "config_version": {
+                    "maxLength": 64,
+                    "minLength": 1,
+                    "pattern": "^[A-Za-z0-9._-]+$",
+                    "title": "Config Version",
+                    "type": "string"
+                  },
+                  "status": {
+                    "enum": [
+                      "OK",
+                      "NO_FEASIBLE_OPTION"
+                    ],
+                    "title": "Status",
+                    "type": "string"
+                  },
+                  "primary": {
+                    "anyOf": [
+                      {
+                        "$ref": "#/$defs/MealOption"
+                      },
+                      {
+                        "type": "null"
+                      }
+                    ]
+                  },
+                  "alternatives": {
+                    "items": {
+                      "$ref": "#/$defs/MealOption"
+                    },
+                    "title": "Alternatives",
+                    "type": "array"
+                  },
+                  "requested_option": {
+                    "anyOf": [
+                      {
+                        "$ref": "#/$defs/MealOption"
+                      },
+                      {
+                        "type": "null"
+                      }
+                    ]
+                  },
+                  "conflicts": {
+                    "items": {
+                      "$ref": "#/$defs/Evidence"
+                    },
+                    "title": "Conflicts",
+                    "type": "array"
+                  },
+                  "warnings": {
+                    "items": {
+                      "$ref": "#/$defs/Evidence"
+                    },
+                    "title": "Warnings",
+                    "type": "array"
+                  },
+                  "recommendation_id": {
+                    "maxLength": 64,
+                    "minLength": 1,
+                    "pattern": "^[A-Za-z0-9._-]+$",
+                    "title": "Recommendation Id",
+                    "type": "string"
+                  }
+                },
+                "required": [
+                  "snapshot",
+                  "rules_version",
+                  "config_version",
+                  "status",
+                  "primary",
+                  "alternatives",
+                  "requested_option",
+                  "conflicts",
+                  "warnings",
+                  "recommendation_id"
+                ],
+                "title": "DecisionResult",
+                "type": "object"
+              }
+            },
+            "required": [
+              "schema_version",
+              "ok",
+              "data_mode",
+              "snapshot",
+              "data"
+            ],
+            "additionalProperties": false
+          },
+          {
+            "type": "object",
+            "properties": {
+              "schema_version": {
+                "const": "0.3"
+              },
+              "ok": {
+                "const": false
+              },
+              "data_mode": {
+                "anyOf": [
+                  {
+                    "const": "SIMULATION"
+                  },
+                  {
+                    "type": "null"
+                  }
+                ]
+              },
+              "snapshot": {
+                "anyOf": [
+                  {
+                    "$ref": "#/$defs/SnapshotRef"
+                  },
+                  {
+                    "type": "null"
+                  }
+                ]
+              },
+              "error": {
+                "type": "object",
+                "properties": {
+                  "code": {
+                    "enum": [
+                      "INVALID_INPUT",
+                      "UNAUTHENTICATED",
+                      "FORBIDDEN",
+                      "CONFIRMATION_REQUIRED",
+                      "MODE_DISABLED",
+                      "NOT_FOUND",
+                      "RUN_REPLACED",
+                      "STALE_SELECTION",
+                      "SNAPSHOT_CONFLICT",
+                      "STALE_PROPOSAL",
+                      "OPS_ALREADY_CONFIRMED",
+                      "IDEMPOTENCY_CONFLICT",
+                      "RATE_LIMITED",
+                      "DEPENDENCY_UNAVAILABLE",
+                      "INTERNAL_ERROR"
+                    ]
+                  },
+                  "message": {
+                    "type": "string"
+                  },
+                  "retryable": {
+                    "type": "boolean"
+                  },
+                  "details": {
+                    "type": "object"
+                  }
+                },
+                "required": [
+                  "code",
+                  "message",
+                  "retryable"
+                ],
+                "additionalProperties": false,
+                "allOf": [
+                  {
+                    "if": {
+                      "properties": {
+                        "code": {
+                          "const": "INVALID_INPUT"
+                        }
+                      }
+                    },
+                    "then": {
+                      "properties": {
+                        "details": {
+                          "type": "object",
+                          "properties": {
+                            "field": {
+                              "type": "string"
+                            }
+                          },
+                          "required": [
+                            "field"
+                          ],
+                          "additionalProperties": false
+                        }
+                      }
+                    }
+                  },
+                  {
+                    "if": {
+                      "properties": {
+                        "code": {
+                          "const": "RATE_LIMITED"
+                        }
+                      }
+                    },
+                    "then": {
+                      "properties": {
+                        "details": {
+                          "type": "object",
+                          "properties": {
+                            "retry_after_seconds": {
+                              "type": "integer",
+                              "minimum": 1
+                            }
+                          },
+                          "required": [
+                            "retry_after_seconds"
+                          ],
+                          "additionalProperties": false
+                        }
+                      }
+                    }
+                  },
+                  {
+                    "if": {
+                      "properties": {
+                        "code": {
+                          "const": "INTERNAL_ERROR"
+                        }
+                      }
+                    },
+                    "then": {
+                      "properties": {
+                        "details": {
+                          "type": "object",
+                          "properties": {
+                            "trace_id": {
+                              "type": "string",
+                              "pattern": "^[A-Za-z0-9._-]{1,64}$"
+                            }
+                          },
+                          "required": [
+                            "trace_id"
+                          ],
+                          "additionalProperties": false
+                        }
+                      }
+                    }
+                  },
+                  {
+                    "if": {
+                      "properties": {
+                        "code": {
+                          "not": {
+                            "enum": [
+                              "INVALID_INPUT",
+                              "RATE_LIMITED",
+                              "INTERNAL_ERROR"
+                            ]
+                          }
+                        }
+                      }
+                    },
+                    "then": {
+                      "not": {
+                        "required": [
+                          "details"
+                        ]
+                      }
+                    }
+                  }
+                ]
+              }
+            },
+            "required": [
+              "schema_version",
+              "ok",
+              "data_mode",
+              "snapshot",
+              "error"
+            ],
+            "additionalProperties": false
+          }
+        ]
+      }
+    },
+    {
+      "name": "replan_meal",
+      "description": "Replan an owned decision without modifying the student's intent.",
+      "inputSchema": {
+        "additionalProperties": false,
+        "properties": {
+          "run_id": {
+            "maxLength": 64,
+            "minLength": 1,
+            "pattern": "^[A-Za-z0-9._-]+$",
+            "title": "Run Id",
+            "type": "string"
+          },
+          "previous_recommendation_id": {
+            "maxLength": 64,
+            "minLength": 1,
+            "pattern": "^[A-Za-z0-9._-]+$",
+            "title": "Previous Recommendation Id",
+            "type": "string"
+          },
+          "max_options": {
+            "title": "Max Options",
+            "maximum": 4,
+            "minimum": 1,
+            "type": "integer"
+          }
+        },
+        "required": [
+          "run_id",
+          "previous_recommendation_id"
+        ],
+        "title": "ReplanRequest",
+        "type": "object"
+      },
+      "outputSchema": {
+        "type": "object",
+        "$defs": {
+          "BundleItem": {
+            "additionalProperties": false,
+            "properties": {
+              "dish_id": {
+                "maxLength": 64,
+                "minLength": 1,
+                "pattern": "^[A-Za-z0-9._-]+$",
+                "title": "Dish Id",
+                "type": "string"
+              },
+              "portions": {
+                "maximum": 9223372036854775807,
+                "minimum": 1,
+                "title": "Portions",
+                "type": "integer"
+              }
+            },
+            "required": [
+              "dish_id",
+              "portions"
+            ],
+            "title": "BundleItem",
+            "type": "object"
+          },
+          "DecisionResult": {
+            "additionalProperties": false,
+            "properties": {
+              "snapshot": {
+                "$ref": "#/$defs/SnapshotRef"
+              },
+              "rules_version": {
+                "maxLength": 64,
+                "minLength": 1,
+                "pattern": "^[A-Za-z0-9._-]+$",
+                "title": "Rules Version",
+                "type": "string"
+              },
+              "config_version": {
+                "maxLength": 64,
+                "minLength": 1,
+                "pattern": "^[A-Za-z0-9._-]+$",
+                "title": "Config Version",
+                "type": "string"
+              },
+              "status": {
+                "enum": [
+                  "OK",
+                  "NO_FEASIBLE_OPTION"
+                ],
+                "title": "Status",
+                "type": "string"
+              },
+              "primary": {
+                "anyOf": [
+                  {
+                    "$ref": "#/$defs/MealOption"
+                  },
+                  {
+                    "type": "null"
+                  }
+                ]
+              },
+              "alternatives": {
+                "items": {
+                  "$ref": "#/$defs/MealOption"
+                },
+                "title": "Alternatives",
+                "type": "array"
+              },
+              "requested_option": {
+                "anyOf": [
+                  {
+                    "$ref": "#/$defs/MealOption"
+                  },
+                  {
+                    "type": "null"
+                  }
+                ]
+              },
+              "conflicts": {
+                "items": {
+                  "$ref": "#/$defs/Evidence"
+                },
+                "title": "Conflicts",
+                "type": "array"
+              },
+              "warnings": {
+                "items": {
+                  "$ref": "#/$defs/Evidence"
+                },
+                "title": "Warnings",
+                "type": "array"
+              },
+              "recommendation_id": {
+                "maxLength": 64,
+                "minLength": 1,
+                "pattern": "^[A-Za-z0-9._-]+$",
+                "title": "Recommendation Id",
+                "type": "string"
+              }
+            },
+            "required": [
+              "snapshot",
+              "rules_version",
+              "config_version",
+              "status",
+              "primary",
+              "alternatives",
+              "requested_option",
+              "conflicts",
+              "warnings",
+              "recommendation_id"
+            ],
+            "title": "DecisionResult",
+            "type": "object"
+          },
+          "Evidence": {
+            "additionalProperties": false,
+            "properties": {
+              "code": {
+                "enum": [
+                  "BUDGET_FIT",
+                  "TIME_FIT",
+                  "TASTE_MATCH",
+                  "NEW_FAMILY",
+                  "LOWER_QUEUE",
+                  "RESTRICTIONS_NOT_DECLARED",
+                  "ORIGIN_ASSUMED",
+                  "SIMULATION_DATA",
+                  "LONG_QUEUE",
+                  "LOW_STOCK",
+                  "PRICE_UNKNOWN",
+                  "STALE_FACT",
+                  "VENUE_CLOSED",
+                  "OUTSIDE_SERVICE_WINDOW",
+                  "HANDOFF_TIME_UNKNOWN",
+                  "OVER_BUDGET",
+                  "OVER_TIME",
+                  "RESTRICTED_INGREDIENT",
+                  "RESTRICTED_ALLERGEN",
+                  "RESTRICTION_UNVERIFIED",
+                  "SOLD_OUT",
+                  "UNAVAILABLE",
+                  "INSUFFICIENT_STOCK",
+                  "SUPPLY_UNVERIFIED",
+                  "REQUESTED_BUNDLE_NOT_REGISTERED",
+                  "QUEUE_CHANGED",
+                  "SUPPLY_RESTORED",
+                  "SERVICE_WINDOW_CHANGED",
+                  "RANKING_CHANGED"
+                ],
+                "title": "Code",
+                "type": "string"
+              },
+              "entity_id": {
+                "anyOf": [
+                  {
+                    "maxLength": 64,
+                    "minLength": 1,
+                    "pattern": "^[A-Za-z0-9._-]+$",
+                    "type": "string"
+                  },
+                  {
+                    "type": "null"
+                  }
+                ],
+                "title": "Entity Id"
+              },
+              "field": {
+                "anyOf": [
+                  {
+                    "type": "string"
+                  },
+                  {
+                    "type": "null"
+                  }
+                ],
+                "title": "Field"
+              },
+              "source_kind": {
+                "enum": [
+                  "AUTHORIZED",
+                  "PUBLIC",
+                  "ESTIMATED",
+                  "SYNTHETIC",
+                  "UNKNOWN"
+                ],
+                "title": "Source Kind",
+                "type": "string"
+              },
+              "source_ref": {
+                "anyOf": [
+                  {
+                    "type": "string"
+                  },
+                  {
+                    "type": "null"
+                  }
+                ],
+                "title": "Source Ref"
+              },
+              "as_of": {
+                "anyOf": [
+                  {
+                    "format": "date-time",
+                    "type": "string"
+                  },
+                  {
+                    "type": "null"
+                  }
+                ],
+                "title": "As Of"
+              },
+              "freshness": {
+                "enum": [
+                  "FRESH",
+                  "STALE",
+                  "UNKNOWN"
+                ],
+                "title": "Freshness",
+                "type": "string"
+              },
+              "value": {
+                "anyOf": [
+                  {
+                    "type": "boolean"
+                  },
+                  {
+                    "type": "integer"
+                  },
+                  {
+                    "type": "number"
+                  },
+                  {
+                    "type": "string"
+                  },
+                  {
+                    "items": {
+                      "type": "string"
+                    },
+                    "type": "array"
+                  },
+                  {
+                    "$ref": "#/$defs/IntRange"
+                  }
+                ],
+                "title": "Value"
+              }
+            },
+            "required": [
+              "code",
+              "entity_id",
+              "field",
+              "source_kind",
+              "source_ref",
+              "as_of",
+              "freshness"
+            ],
+            "title": "Evidence",
+            "type": "object"
+          },
+          "IntRange": {
+            "additionalProperties": false,
+            "properties": {
+              "min": {
+                "maximum": 9223372036854775807,
+                "minimum": 0,
+                "title": "Min",
+                "type": "integer"
+              },
+              "max": {
+                "maximum": 9223372036854775807,
+                "minimum": 0,
+                "title": "Max",
+                "type": "integer"
+              }
+            },
+            "required": [
+              "min",
+              "max"
+            ],
+            "title": "IntRange",
+            "type": "object"
+          },
+          "MealOption": {
+            "additionalProperties": false,
+            "properties": {
+              "bundle_id": {
+                "maxLength": 64,
+                "minLength": 1,
+                "pattern": "^[A-Za-z0-9._-]+$",
+                "title": "Bundle Id",
+                "type": "string"
+              },
+              "venue_id": {
+                "maxLength": 64,
+                "minLength": 1,
+                "pattern": "^[A-Za-z0-9._-]+$",
+                "title": "Venue Id",
+                "type": "string"
+              },
+              "anchor_dish_id": {
+                "maxLength": 64,
+                "minLength": 1,
+                "pattern": "^[A-Za-z0-9._-]+$",
+                "title": "Anchor Dish Id",
+                "type": "string"
+              },
+              "label": {
+                "title": "Label",
+                "type": "string"
+              },
+              "items": {
+                "items": {
+                  "$ref": "#/$defs/BundleItem"
+                },
+                "maxItems": 3,
+                "minItems": 1,
+                "title": "Items",
+                "type": "array"
+              },
+              "price_cents": {
+                "anyOf": [
+                  {
+                    "maximum": 9223372036854775807,
+                    "minimum": 0,
+                    "type": "integer"
+                  },
+                  {
+                    "type": "null"
+                  }
+                ],
+                "title": "Price Cents"
+              },
+              "queue_min": {
+                "anyOf": [
+                  {
+                    "$ref": "#/$defs/IntRange"
+                  },
+                  {
+                    "type": "null"
+                  }
+                ]
+              },
+              "total_time_min": {
+                "anyOf": [
+                  {
+                    "$ref": "#/$defs/IntRange"
+                  },
+                  {
+                    "type": "null"
+                  }
+                ]
+              },
+              "available_bundle_portions": {
+                "anyOf": [
+                  {
+                    "maximum": 9223372036854775807,
+                    "minimum": 0,
+                    "type": "integer"
+                  },
+                  {
+                    "type": "null"
+                  }
+                ],
+                "title": "Available Bundle Portions"
+              },
+              "match_score": {
+                "maximum": 1000,
+                "minimum": 0,
+                "title": "Match Score",
+                "type": "integer"
+              },
+              "data_confidence": {
+                "enum": [
+                  "HIGH",
+                  "MEDIUM",
+                  "LOW",
+                  "UNKNOWN"
+                ],
+                "title": "Data Confidence",
+                "type": "string"
+              },
+              "evidence": {
+                "items": {
+                  "$ref": "#/$defs/Evidence"
+                },
+                "title": "Evidence",
+                "type": "array"
+              },
+              "warnings": {
+                "items": {
+                  "$ref": "#/$defs/Evidence"
+                },
+                "title": "Warnings",
+                "type": "array"
+              }
+            },
+            "required": [
+              "bundle_id",
+              "venue_id",
+              "anchor_dish_id",
+              "label",
+              "items",
+              "price_cents",
+              "queue_min",
+              "total_time_min",
+              "available_bundle_portions",
+              "match_score",
+              "data_confidence",
+              "evidence",
+              "warnings"
+            ],
+            "title": "MealOption",
+            "type": "object"
+          },
+          "SnapshotRef": {
+            "additionalProperties": false,
+            "properties": {
+              "run_id": {
+                "maxLength": 64,
+                "minLength": 1,
+                "pattern": "^[A-Za-z0-9._-]+$",
+                "title": "Run Id",
+                "type": "string"
+              },
+              "snapshot_id": {
+                "maxLength": 64,
+                "minLength": 1,
+                "pattern": "^[A-Za-z0-9._-]+$",
+                "title": "Snapshot Id",
+                "type": "string"
+              },
+              "revision": {
+                "maximum": 9223372036854775807,
+                "minimum": 1,
+                "title": "Revision",
+                "type": "integer"
+              },
+              "clock_at": {
+                "format": "date-time",
+                "title": "Clock At",
+                "type": "string"
+              },
+              "data_mode": {
+                "enum": [
+                  "SIMULATION",
+                  "LIVE"
+                ],
+                "title": "Data Mode",
+                "type": "string"
+              },
+              "catalog_version": {
+                "maxLength": 64,
+                "minLength": 1,
+                "pattern": "^[A-Za-z0-9._-]+$",
+                "title": "Catalog Version",
+                "type": "string"
+              },
+              "schema_version": {
+                "const": "0.3",
+                "default": "0.3",
+                "title": "Schema Version",
+                "type": "string"
+              }
+            },
+            "required": [
+              "run_id",
+              "snapshot_id",
+              "revision",
+              "clock_at",
+              "data_mode",
+              "catalog_version",
+              "schema_version"
+            ],
+            "title": "SnapshotRef",
+            "type": "object"
+          }
+        },
+        "oneOf": [
+          {
+            "type": "object",
+            "properties": {
+              "schema_version": {
+                "const": "0.3"
+              },
+              "ok": {
+                "const": true
+              },
+              "data_mode": {
+                "const": "SIMULATION"
+              },
+              "snapshot": {
+                "$ref": "#/$defs/SnapshotRef"
+              },
+              "data": {
+                "additionalProperties": false,
+                "properties": {
+                  "previous_recommendation_id": {
+                    "maxLength": 64,
+                    "minLength": 1,
+                    "pattern": "^[A-Za-z0-9._-]+$",
+                    "title": "Previous Recommendation Id",
+                    "type": "string"
+                  },
+                  "result": {
+                    "$ref": "#/$defs/DecisionResult"
+                  },
+                  "outcome": {
+                    "enum": [
+                      "UNCHANGED",
+                      "UPDATED",
+                      "NO_FEASIBLE_OPTION"
+                    ],
+                    "title": "Outcome",
+                    "type": "string"
+                  },
+                  "change_reasons": {
+                    "items": {
+                      "$ref": "#/$defs/Evidence"
+                    },
+                    "title": "Change Reasons",
+                    "type": "array"
+                  },
+                  "selected_bundle_id": {
+                    "anyOf": [
+                      {
+                        "maxLength": 64,
+                        "minLength": 1,
+                        "pattern": "^[A-Za-z0-9._-]+$",
+                        "type": "string"
+                      },
+                      {
+                        "type": "null"
+                      }
+                    ],
+                    "title": "Selected Bundle Id"
+                  },
+                  "selection_state": {
+                    "enum": [
+                      "NONE",
+                      "FEASIBLE",
+                      "NEEDS_RESELECT"
+                    ],
+                    "title": "Selection State",
+                    "type": "string"
+                  }
+                },
+                "required": [
+                  "previous_recommendation_id",
+                  "result",
+                  "outcome",
+                  "change_reasons",
+                  "selected_bundle_id",
+                  "selection_state"
+                ],
+                "title": "ReplanResult",
+                "type": "object"
+              }
+            },
+            "required": [
+              "schema_version",
+              "ok",
+              "data_mode",
+              "snapshot",
+              "data"
+            ],
+            "additionalProperties": false
+          },
+          {
+            "type": "object",
+            "properties": {
+              "schema_version": {
+                "const": "0.3"
+              },
+              "ok": {
+                "const": false
+              },
+              "data_mode": {
+                "anyOf": [
+                  {
+                    "const": "SIMULATION"
+                  },
+                  {
+                    "type": "null"
+                  }
+                ]
+              },
+              "snapshot": {
+                "anyOf": [
+                  {
+                    "$ref": "#/$defs/SnapshotRef"
+                  },
+                  {
+                    "type": "null"
+                  }
+                ]
+              },
+              "error": {
+                "type": "object",
+                "properties": {
+                  "code": {
+                    "enum": [
+                      "INVALID_INPUT",
+                      "UNAUTHENTICATED",
+                      "FORBIDDEN",
+                      "CONFIRMATION_REQUIRED",
+                      "MODE_DISABLED",
+                      "NOT_FOUND",
+                      "RUN_REPLACED",
+                      "STALE_SELECTION",
+                      "SNAPSHOT_CONFLICT",
+                      "STALE_PROPOSAL",
+                      "OPS_ALREADY_CONFIRMED",
+                      "IDEMPOTENCY_CONFLICT",
+                      "RATE_LIMITED",
+                      "DEPENDENCY_UNAVAILABLE",
+                      "INTERNAL_ERROR"
+                    ]
+                  },
+                  "message": {
+                    "type": "string"
+                  },
+                  "retryable": {
+                    "type": "boolean"
+                  },
+                  "details": {
+                    "type": "object"
+                  }
+                },
+                "required": [
+                  "code",
+                  "message",
+                  "retryable"
+                ],
+                "additionalProperties": false,
+                "allOf": [
+                  {
+                    "if": {
+                      "properties": {
+                        "code": {
+                          "const": "INVALID_INPUT"
+                        }
+                      }
+                    },
+                    "then": {
+                      "properties": {
+                        "details": {
+                          "type": "object",
+                          "properties": {
+                            "field": {
+                              "type": "string"
+                            }
+                          },
+                          "required": [
+                            "field"
+                          ],
+                          "additionalProperties": false
+                        }
+                      }
+                    }
+                  },
+                  {
+                    "if": {
+                      "properties": {
+                        "code": {
+                          "const": "RATE_LIMITED"
+                        }
+                      }
+                    },
+                    "then": {
+                      "properties": {
+                        "details": {
+                          "type": "object",
+                          "properties": {
+                            "retry_after_seconds": {
+                              "type": "integer",
+                              "minimum": 1
+                            }
+                          },
+                          "required": [
+                            "retry_after_seconds"
+                          ],
+                          "additionalProperties": false
+                        }
+                      }
+                    }
+                  },
+                  {
+                    "if": {
+                      "properties": {
+                        "code": {
+                          "const": "INTERNAL_ERROR"
+                        }
+                      }
+                    },
+                    "then": {
+                      "properties": {
+                        "details": {
+                          "type": "object",
+                          "properties": {
+                            "trace_id": {
+                              "type": "string",
+                              "pattern": "^[A-Za-z0-9._-]{1,64}$"
+                            }
+                          },
+                          "required": [
+                            "trace_id"
+                          ],
+                          "additionalProperties": false
+                        }
+                      }
+                    }
+                  },
+                  {
+                    "if": {
+                      "properties": {
+                        "code": {
+                          "not": {
+                            "enum": [
+                              "INVALID_INPUT",
+                              "RATE_LIMITED",
+                              "INTERNAL_ERROR"
+                            ]
+                          }
+                        }
+                      }
+                    },
+                    "then": {
+                      "not": {
+                        "required": [
+                          "details"
+                        ]
+                      }
+                    }
+                  }
+                ]
+              }
+            },
+            "required": [
+              "schema_version",
+              "ok",
+              "data_mode",
+              "snapshot",
+              "error"
+            ],
+            "additionalProperties": false
+          }
+        ]
+      }
+    },
+    {
+      "name": "submit_feedback",
+      "description": "Write own feedback with a human-authorized receipt.",
+      "inputSchema": {
+        "additionalProperties": false,
+        "properties": {
+          "run_id": {
+            "maxLength": 64,
+            "minLength": 1,
+            "pattern": "^[A-Za-z0-9._-]+$",
+            "title": "Run Id",
+            "type": "string"
+          },
+          "event_type": {
+            "enum": [
+              "PREFERENCE",
+              "INTENT_SELECTED",
+              "INTENT_CLEARED",
+              "DINED",
+              "NOT_DINED",
+              "REJECTED"
+            ],
+            "title": "Event Type",
+            "type": "string"
+          },
+          "recommendation_id": {
+            "title": "Recommendation Id",
+            "maxLength": 64,
+            "minLength": 1,
+            "pattern": "^[A-Za-z0-9._-]+$",
+            "type": "string"
+          },
+          "bundle_id": {
+            "title": "Bundle Id",
+            "maxLength": 64,
+            "minLength": 1,
+            "pattern": "^[A-Za-z0-9._-]+$",
+            "type": "string"
+          },
+          "dish_id": {
+            "title": "Dish Id",
+            "maxLength": 64,
+            "minLength": 1,
+            "pattern": "^[A-Za-z0-9._-]+$",
+            "type": "string"
+          },
+          "idempotency_key": {
+            "maxLength": 128,
+            "minLength": 8,
+            "pattern": "^[!-~]+$",
+            "title": "Idempotency Key",
+            "type": "string"
+          },
+          "interaction_receipt": {
+            "pattern": "^[A-Za-z0-9_-]{16,512}$",
+            "title": "Interaction Receipt",
+            "type": "string"
+          }
+        },
+        "required": [
+          "run_id",
+          "event_type",
+          "idempotency_key",
+          "interaction_receipt"
+        ],
+        "title": "FeedbackWithReceipt",
+        "type": "object",
+        "allOf": [
+          {
+            "if": {
+              "properties": {
+                "event_type": {
+                  "const": "PREFERENCE"
+                }
+              }
+            },
+            "then": {
+              "required": [
+                "dish_id"
+              ],
+              "properties": {
+                "bundle_id": false,
+                "recommendation_id": false
+              }
+            }
+          },
+          {
+            "if": {
+              "properties": {
+                "event_type": {
+                  "const": "INTENT_SELECTED"
+                }
+              }
+            },
+            "then": {
+              "required": [
+                "bundle_id",
+                "recommendation_id"
+              ],
+              "properties": {
+                "dish_id": false
+              }
+            }
+          },
+          {
+            "if": {
+              "properties": {
+                "event_type": {
+                  "const": "INTENT_CLEARED"
+                }
+              }
+            },
+            "then": {
+              "required": [
+                "recommendation_id"
+              ],
+              "properties": {
+                "bundle_id": false,
+                "dish_id": false
+              }
+            }
+          },
+          {
+            "if": {
+              "properties": {
+                "event_type": {
+                  "const": "DINED"
+                }
+              }
+            },
+            "then": {
+              "required": [
+                "bundle_id",
+                "recommendation_id"
+              ],
+              "properties": {
+                "dish_id": false
+              }
+            }
+          },
+          {
+            "if": {
+              "properties": {
+                "event_type": {
+                  "const": "NOT_DINED"
+                }
+              }
+            },
+            "then": {
+              "required": [
+                "recommendation_id"
+              ],
+              "properties": {
+                "bundle_id": false,
+                "dish_id": false
+              }
+            }
+          },
+          {
+            "if": {
+              "properties": {
+                "event_type": {
+                  "const": "REJECTED"
+                }
+              }
+            },
+            "then": {
+              "required": [
+                "recommendation_id"
+              ],
+              "properties": {
+                "dish_id": false
+              }
+            }
+          }
+        ]
+      },
+      "outputSchema": {
+        "type": "object",
+        "$defs": {
+          "SnapshotRef": {
+            "additionalProperties": false,
+            "properties": {
+              "run_id": {
+                "maxLength": 64,
+                "minLength": 1,
+                "pattern": "^[A-Za-z0-9._-]+$",
+                "title": "Run Id",
+                "type": "string"
+              },
+              "snapshot_id": {
+                "maxLength": 64,
+                "minLength": 1,
+                "pattern": "^[A-Za-z0-9._-]+$",
+                "title": "Snapshot Id",
+                "type": "string"
+              },
+              "revision": {
+                "maximum": 9223372036854775807,
+                "minimum": 1,
+                "title": "Revision",
+                "type": "integer"
+              },
+              "clock_at": {
+                "format": "date-time",
+                "title": "Clock At",
+                "type": "string"
+              },
+              "data_mode": {
+                "enum": [
+                  "SIMULATION",
+                  "LIVE"
+                ],
+                "title": "Data Mode",
+                "type": "string"
+              },
+              "catalog_version": {
+                "maxLength": 64,
+                "minLength": 1,
+                "pattern": "^[A-Za-z0-9._-]+$",
+                "title": "Catalog Version",
+                "type": "string"
+              },
+              "schema_version": {
+                "const": "0.3",
+                "default": "0.3",
+                "title": "Schema Version",
+                "type": "string"
+              }
+            },
+            "required": [
+              "run_id",
+              "snapshot_id",
+              "revision",
+              "clock_at",
+              "data_mode",
+              "catalog_version",
+              "schema_version"
+            ],
+            "title": "SnapshotRef",
+            "type": "object"
+          }
+        },
+        "oneOf": [
+          {
+            "type": "object",
+            "properties": {
+              "schema_version": {
+                "const": "0.3"
+              },
+              "ok": {
+                "const": true
+              },
+              "data_mode": {
+                "const": "SIMULATION"
+              },
+              "snapshot": {
+                "$ref": "#/$defs/SnapshotRef"
+              },
+              "data": {
+                "additionalProperties": false,
+                "properties": {
+                  "event_id": {
+                    "maxLength": 64,
+                    "minLength": 1,
+                    "pattern": "^[A-Za-z0-9._-]+$",
+                    "title": "Event Id",
+                    "type": "string"
+                  },
+                  "event_type": {
+                    "enum": [
+                      "PREFERENCE",
+                      "INTENT_SELECTED",
+                      "INTENT_CLEARED",
+                      "DINED",
+                      "NOT_DINED",
+                      "REJECTED"
+                    ],
+                    "title": "Event Type",
+                    "type": "string"
+                  },
+                  "window_id": {
+                    "maxLength": 64,
+                    "minLength": 1,
+                    "pattern": "^[A-Za-z0-9._-]+$",
+                    "title": "Window Id",
+                    "type": "string"
+                  },
+                  "share_applied": {
+                    "title": "Share Applied",
+                    "type": "boolean"
+                  },
+                  "signals_revision": {
+                    "maximum": 9223372036854775807,
+                    "minimum": 0,
+                    "title": "Signals Revision",
+                    "type": "integer"
+                  }
+                },
+                "required": [
+                  "event_id",
+                  "event_type",
+                  "window_id",
+                  "share_applied",
+                  "signals_revision"
+                ],
+                "title": "FeedbackReceipt",
+                "type": "object"
+              }
+            },
+            "required": [
+              "schema_version",
+              "ok",
+              "data_mode",
+              "snapshot",
+              "data"
+            ],
+            "additionalProperties": false
+          },
+          {
+            "type": "object",
+            "properties": {
+              "schema_version": {
+                "const": "0.3"
+              },
+              "ok": {
+                "const": false
+              },
+              "data_mode": {
+                "anyOf": [
+                  {
+                    "const": "SIMULATION"
+                  },
+                  {
+                    "type": "null"
+                  }
+                ]
+              },
+              "snapshot": {
+                "anyOf": [
+                  {
+                    "$ref": "#/$defs/SnapshotRef"
+                  },
+                  {
+                    "type": "null"
+                  }
+                ]
+              },
+              "error": {
+                "type": "object",
+                "properties": {
+                  "code": {
+                    "enum": [
+                      "INVALID_INPUT",
+                      "UNAUTHENTICATED",
+                      "FORBIDDEN",
+                      "CONFIRMATION_REQUIRED",
+                      "MODE_DISABLED",
+                      "NOT_FOUND",
+                      "RUN_REPLACED",
+                      "STALE_SELECTION",
+                      "SNAPSHOT_CONFLICT",
+                      "STALE_PROPOSAL",
+                      "OPS_ALREADY_CONFIRMED",
+                      "IDEMPOTENCY_CONFLICT",
+                      "RATE_LIMITED",
+                      "DEPENDENCY_UNAVAILABLE",
+                      "INTERNAL_ERROR"
+                    ]
+                  },
+                  "message": {
+                    "type": "string"
+                  },
+                  "retryable": {
+                    "type": "boolean"
+                  },
+                  "details": {
+                    "type": "object"
+                  }
+                },
+                "required": [
+                  "code",
+                  "message",
+                  "retryable"
+                ],
+                "additionalProperties": false,
+                "allOf": [
+                  {
+                    "if": {
+                      "properties": {
+                        "code": {
+                          "const": "INVALID_INPUT"
+                        }
+                      }
+                    },
+                    "then": {
+                      "properties": {
+                        "details": {
+                          "type": "object",
+                          "properties": {
+                            "field": {
+                              "type": "string"
+                            }
+                          },
+                          "required": [
+                            "field"
+                          ],
+                          "additionalProperties": false
+                        }
+                      }
+                    }
+                  },
+                  {
+                    "if": {
+                      "properties": {
+                        "code": {
+                          "const": "RATE_LIMITED"
+                        }
+                      }
+                    },
+                    "then": {
+                      "properties": {
+                        "details": {
+                          "type": "object",
+                          "properties": {
+                            "retry_after_seconds": {
+                              "type": "integer",
+                              "minimum": 1
+                            }
+                          },
+                          "required": [
+                            "retry_after_seconds"
+                          ],
+                          "additionalProperties": false
+                        }
+                      }
+                    }
+                  },
+                  {
+                    "if": {
+                      "properties": {
+                        "code": {
+                          "const": "INTERNAL_ERROR"
+                        }
+                      }
+                    },
+                    "then": {
+                      "properties": {
+                        "details": {
+                          "type": "object",
+                          "properties": {
+                            "trace_id": {
+                              "type": "string",
+                              "pattern": "^[A-Za-z0-9._-]{1,64}$"
+                            }
+                          },
+                          "required": [
+                            "trace_id"
+                          ],
+                          "additionalProperties": false
+                        }
+                      }
+                    }
+                  },
+                  {
+                    "if": {
+                      "properties": {
+                        "code": {
+                          "not": {
+                            "enum": [
+                              "INVALID_INPUT",
+                              "RATE_LIMITED",
+                              "INTERNAL_ERROR"
+                            ]
+                          }
+                        }
+                      }
+                    },
+                    "then": {
+                      "not": {
+                        "required": [
+                          "details"
+                        ]
+                      }
+                    }
+                  }
+                ]
+              }
+            },
+            "required": [
+              "schema_version",
+              "ok",
+              "data_mode",
+              "snapshot",
+              "error"
+            ],
+            "additionalProperties": false
+          }
+        ]
+      }
+    },
+    {
+      "name": "get_demand_insights",
+      "description": "Read permitted, privacy-filtered demand aggregates.",
+      "inputSchema": {
+        "additionalProperties": false,
+        "properties": {
+          "run_id": {
+            "maxLength": 64,
+            "minLength": 1,
+            "pattern": "^[A-Za-z0-9._-]+$",
+            "title": "Run Id",
+            "type": "string"
+          },
+          "reference_window_id": {
+            "maxLength": 64,
+            "minLength": 1,
+            "pattern": "^[A-Za-z0-9._-]+$",
+            "title": "Reference Window Id",
+            "type": "string"
+          },
+          "venue_id": {
+            "title": "Venue Id",
+            "maxLength": 64,
+            "minLength": 1,
+            "pattern": "^[A-Za-z0-9._-]+$",
+            "type": "string"
+          }
+        },
+        "required": [
+          "run_id",
+          "reference_window_id"
+        ],
+        "title": "DemandInsightsQuery",
+        "type": "object"
+      },
+      "outputSchema": {
+        "type": "object",
+        "$defs": {
+          "DemandInsight": {
+            "additionalProperties": false,
+            "properties": {
+              "run_id": {
+                "maxLength": 64,
+                "minLength": 1,
+                "pattern": "^[A-Za-z0-9._-]+$",
+                "title": "Run Id",
+                "type": "string"
+              },
+              "reference_window_id": {
+                "maxLength": 64,
+                "minLength": 1,
+                "pattern": "^[A-Za-z0-9._-]+$",
+                "title": "Reference Window Id",
+                "type": "string"
+              },
+              "venue_id": {
+                "maxLength": 64,
+                "minLength": 1,
+                "pattern": "^[A-Za-z0-9._-]+$",
+                "title": "Venue Id",
+                "type": "string"
+              },
+              "dish_id": {
+                "maxLength": 64,
+                "minLength": 1,
+                "pattern": "^[A-Za-z0-9._-]+$",
+                "title": "Dish Id",
+                "type": "string"
+              },
+              "preferred_sessions": {
+                "anyOf": [
+                  {
+                    "maximum": 9223372036854775807,
+                    "minimum": 0,
+                    "type": "integer"
+                  },
+                  {
+                    "type": "null"
+                  }
+                ],
+                "title": "Preferred Sessions"
+              },
+              "intended_sessions": {
+                "anyOf": [
+                  {
+                    "maximum": 9223372036854775807,
+                    "minimum": 0,
+                    "type": "integer"
+                  },
+                  {
+                    "type": "null"
+                  }
+                ],
+                "title": "Intended Sessions"
+              },
+              "dined_sessions": {
+                "anyOf": [
+                  {
+                    "maximum": 9223372036854775807,
+                    "minimum": 0,
+                    "type": "integer"
+                  },
+                  {
+                    "type": "null"
+                  }
+                ],
+                "title": "Dined Sessions"
+              },
+              "visibility": {
+                "$ref": "#/$defs/DemandVisibility"
+              },
+              "signals_revision": {
+                "maximum": 9223372036854775807,
+                "minimum": 0,
+                "title": "Signals Revision",
+                "type": "integer"
+              },
+              "observed_until": {
+                "format": "date-time",
+                "title": "Observed Until",
+                "type": "string"
+              }
+            },
+            "required": [
+              "run_id",
+              "reference_window_id",
+              "venue_id",
+              "dish_id",
+              "preferred_sessions",
+              "intended_sessions",
+              "dined_sessions",
+              "visibility",
+              "signals_revision",
+              "observed_until"
+            ],
+            "title": "DemandInsight",
+            "type": "object"
+          },
+          "DemandVisibility": {
+            "additionalProperties": false,
+            "properties": {
+              "preferred_sessions": {
+                "enum": [
+                  "VISIBLE",
+                  "SUPPRESSED"
+                ],
+                "title": "Preferred Sessions",
+                "type": "string"
+              },
+              "intended_sessions": {
+                "enum": [
+                  "VISIBLE",
+                  "SUPPRESSED"
+                ],
+                "title": "Intended Sessions",
+                "type": "string"
+              },
+              "dined_sessions": {
+                "enum": [
+                  "VISIBLE",
+                  "SUPPRESSED"
+                ],
+                "title": "Dined Sessions",
+                "type": "string"
+              }
+            },
+            "required": [
+              "preferred_sessions",
+              "intended_sessions",
+              "dined_sessions"
+            ],
+            "title": "DemandVisibility",
+            "type": "object"
+          },
+          "SnapshotRef": {
+            "additionalProperties": false,
+            "properties": {
+              "run_id": {
+                "maxLength": 64,
+                "minLength": 1,
+                "pattern": "^[A-Za-z0-9._-]+$",
+                "title": "Run Id",
+                "type": "string"
+              },
+              "snapshot_id": {
+                "maxLength": 64,
+                "minLength": 1,
+                "pattern": "^[A-Za-z0-9._-]+$",
+                "title": "Snapshot Id",
+                "type": "string"
+              },
+              "revision": {
+                "maximum": 9223372036854775807,
+                "minimum": 1,
+                "title": "Revision",
+                "type": "integer"
+              },
+              "clock_at": {
+                "format": "date-time",
+                "title": "Clock At",
+                "type": "string"
+              },
+              "data_mode": {
+                "enum": [
+                  "SIMULATION",
+                  "LIVE"
+                ],
+                "title": "Data Mode",
+                "type": "string"
+              },
+              "catalog_version": {
+                "maxLength": 64,
+                "minLength": 1,
+                "pattern": "^[A-Za-z0-9._-]+$",
+                "title": "Catalog Version",
+                "type": "string"
+              },
+              "schema_version": {
+                "const": "0.3",
+                "default": "0.3",
+                "title": "Schema Version",
+                "type": "string"
+              }
+            },
+            "required": [
+              "run_id",
+              "snapshot_id",
+              "revision",
+              "clock_at",
+              "data_mode",
+              "catalog_version",
+              "schema_version"
+            ],
+            "title": "SnapshotRef",
+            "type": "object"
+          }
+        },
+        "oneOf": [
+          {
+            "type": "object",
+            "properties": {
+              "schema_version": {
+                "const": "0.3"
+              },
+              "ok": {
+                "const": true
+              },
+              "data_mode": {
+                "const": "SIMULATION"
+              },
+              "snapshot": {
+                "$ref": "#/$defs/SnapshotRef"
+              },
+              "data": {
+                "additionalProperties": false,
+                "properties": {
+                  "signals_revision": {
+                    "maximum": 9223372036854775807,
+                    "minimum": 0,
+                    "title": "Signals Revision",
+                    "type": "integer"
+                  },
+                  "observed_until": {
+                    "format": "date-time",
+                    "title": "Observed Until",
+                    "type": "string"
+                  },
+                  "rows": {
+                    "items": {
+                      "$ref": "#/$defs/DemandInsight"
+                    },
+                    "title": "Rows",
+                    "type": "array"
+                  }
+                },
+                "required": [
+                  "signals_revision",
+                  "observed_until",
+                  "rows"
+                ],
+                "title": "DemandInsights",
+                "type": "object"
+              }
+            },
+            "required": [
+              "schema_version",
+              "ok",
+              "data_mode",
+              "snapshot",
+              "data"
+            ],
+            "additionalProperties": false
+          },
+          {
+            "type": "object",
+            "properties": {
+              "schema_version": {
+                "const": "0.3"
+              },
+              "ok": {
+                "const": false
+              },
+              "data_mode": {
+                "anyOf": [
+                  {
+                    "const": "SIMULATION"
+                  },
+                  {
+                    "type": "null"
+                  }
+                ]
+              },
+              "snapshot": {
+                "anyOf": [
+                  {
+                    "$ref": "#/$defs/SnapshotRef"
+                  },
+                  {
+                    "type": "null"
+                  }
+                ]
+              },
+              "error": {
+                "type": "object",
+                "properties": {
+                  "code": {
+                    "enum": [
+                      "INVALID_INPUT",
+                      "UNAUTHENTICATED",
+                      "FORBIDDEN",
+                      "CONFIRMATION_REQUIRED",
+                      "MODE_DISABLED",
+                      "NOT_FOUND",
+                      "RUN_REPLACED",
+                      "STALE_SELECTION",
+                      "SNAPSHOT_CONFLICT",
+                      "STALE_PROPOSAL",
+                      "OPS_ALREADY_CONFIRMED",
+                      "IDEMPOTENCY_CONFLICT",
+                      "RATE_LIMITED",
+                      "DEPENDENCY_UNAVAILABLE",
+                      "INTERNAL_ERROR"
+                    ]
+                  },
+                  "message": {
+                    "type": "string"
+                  },
+                  "retryable": {
+                    "type": "boolean"
+                  },
+                  "details": {
+                    "type": "object"
+                  }
+                },
+                "required": [
+                  "code",
+                  "message",
+                  "retryable"
+                ],
+                "additionalProperties": false,
+                "allOf": [
+                  {
+                    "if": {
+                      "properties": {
+                        "code": {
+                          "const": "INVALID_INPUT"
+                        }
+                      }
+                    },
+                    "then": {
+                      "properties": {
+                        "details": {
+                          "type": "object",
+                          "properties": {
+                            "field": {
+                              "type": "string"
+                            }
+                          },
+                          "required": [
+                            "field"
+                          ],
+                          "additionalProperties": false
+                        }
+                      }
+                    }
+                  },
+                  {
+                    "if": {
+                      "properties": {
+                        "code": {
+                          "const": "RATE_LIMITED"
+                        }
+                      }
+                    },
+                    "then": {
+                      "properties": {
+                        "details": {
+                          "type": "object",
+                          "properties": {
+                            "retry_after_seconds": {
+                              "type": "integer",
+                              "minimum": 1
+                            }
+                          },
+                          "required": [
+                            "retry_after_seconds"
+                          ],
+                          "additionalProperties": false
+                        }
+                      }
+                    }
+                  },
+                  {
+                    "if": {
+                      "properties": {
+                        "code": {
+                          "const": "INTERNAL_ERROR"
+                        }
+                      }
+                    },
+                    "then": {
+                      "properties": {
+                        "details": {
+                          "type": "object",
+                          "properties": {
+                            "trace_id": {
+                              "type": "string",
+                              "pattern": "^[A-Za-z0-9._-]{1,64}$"
+                            }
+                          },
+                          "required": [
+                            "trace_id"
+                          ],
+                          "additionalProperties": false
+                        }
+                      }
+                    }
+                  },
+                  {
+                    "if": {
+                      "properties": {
+                        "code": {
+                          "not": {
+                            "enum": [
+                              "INVALID_INPUT",
+                              "RATE_LIMITED",
+                              "INTERNAL_ERROR"
+                            ]
+                          }
+                        }
+                      }
+                    },
+                    "then": {
+                      "not": {
+                        "required": [
+                          "details"
+                        ]
+                      }
+                    }
+                  }
+                ]
+              }
+            },
+            "required": [
+              "schema_version",
+              "ok",
+              "data_mode",
+              "snapshot",
+              "error"
+            ],
+            "additionalProperties": false
+          }
+        ]
+      }
+    },
+    {
+      "name": "generate_ops_recommendations",
+      "description": "Calculate and save proposals without reserving stock.",
+      "inputSchema": {
+        "additionalProperties": false,
+        "properties": {
+          "run_id": {
+            "maxLength": 64,
+            "minLength": 1,
+            "pattern": "^[A-Za-z0-9._-]+$",
+            "title": "Run Id",
+            "type": "string"
+          },
+          "reference_window_id": {
+            "maxLength": 64,
+            "minLength": 1,
+            "pattern": "^[A-Za-z0-9._-]+$",
+            "title": "Reference Window Id",
+            "type": "string"
+          },
+          "target_window_id": {
+            "maxLength": 64,
+            "minLength": 1,
+            "pattern": "^[A-Za-z0-9._-]+$",
+            "title": "Target Window Id",
+            "type": "string"
+          },
+          "venue_id": {
+            "title": "Venue Id",
+            "maxLength": 64,
+            "minLength": 1,
+            "pattern": "^[A-Za-z0-9._-]+$",
+            "type": "string"
+          }
+        },
+        "required": [
+          "run_id",
+          "reference_window_id",
+          "target_window_id"
+        ],
+        "title": "OpsProposalsRequest",
+        "type": "object"
+      },
+      "outputSchema": {
+        "type": "object",
+        "$defs": {
+          "OpsAnalysis": {
+            "additionalProperties": false,
+            "properties": {
+              "venue_id": {
+                "maxLength": 64,
+                "minLength": 1,
+                "pattern": "^[A-Za-z0-9._-]+$",
+                "title": "Venue Id",
+                "type": "string"
+              },
+              "dish_id": {
+                "maxLength": 64,
+                "minLength": 1,
+                "pattern": "^[A-Za-z0-9._-]+$",
+                "title": "Dish Id",
+                "type": "string"
+              },
+              "reference_window_id": {
+                "maxLength": 64,
+                "minLength": 1,
+                "pattern": "^[A-Za-z0-9._-]+$",
+                "title": "Reference Window Id",
+                "type": "string"
+              },
+              "target_window_id": {
+                "maxLength": 64,
+                "minLength": 1,
+                "pattern": "^[A-Za-z0-9._-]+$",
+                "title": "Target Window Id",
+                "type": "string"
+              },
+              "demand_proxy_portions": {
+                "anyOf": [
+                  {
+                    "maximum": 9223372036854775807,
+                    "minimum": 0,
+                    "type": "integer"
+                  },
+                  {
+                    "type": "null"
+                  }
+                ],
+                "title": "Demand Proxy Portions"
+              },
+              "planned_supply_portions": {
+                "maximum": 9223372036854775807,
+                "minimum": 0,
+                "title": "Planned Supply Portions",
+                "type": "integer"
+              },
+              "shortage_portions": {
+                "anyOf": [
+                  {
+                    "maximum": 9223372036854775807,
+                    "minimum": 0,
+                    "type": "integer"
+                  },
+                  {
+                    "type": "null"
+                  }
+                ],
+                "title": "Shortage Portions"
+              },
+              "feasible_extra_portions": {
+                "anyOf": [
+                  {
+                    "maximum": 9223372036854775807,
+                    "minimum": 0,
+                    "type": "integer"
+                  },
+                  {
+                    "type": "null"
+                  }
+                ],
+                "title": "Feasible Extra Portions"
+              },
+              "uncovered_portions": {
+                "anyOf": [
+                  {
+                    "maximum": 9223372036854775807,
+                    "minimum": 0,
+                    "type": "integer"
+                  },
+                  {
+                    "type": "null"
+                  }
+                ],
+                "title": "Uncovered Portions"
+              },
+              "ingredient_review_portions": {
+                "anyOf": [
+                  {
+                    "maximum": 9223372036854775807,
+                    "minimum": 0,
+                    "type": "integer"
+                  },
+                  {
+                    "type": "null"
+                  }
+                ],
+                "title": "Ingredient Review Portions"
+              },
+              "evidence_codes": {
+                "items": {
+                  "enum": [
+                    "DEMAND_FROM_PREFERENCE",
+                    "DEMAND_FROM_INTENT",
+                    "DEMAND_FROM_SELF_REPORT",
+                    "INSUFFICIENT_SIGNAL",
+                    "DISH_CAPACITY_LIMIT",
+                    "PREP_CAPACITY_LIMIT",
+                    "INGREDIENT_LIMIT"
+                  ],
+                  "type": "string"
+                },
+                "title": "Evidence Codes",
+                "type": "array"
+              }
+            },
+            "required": [
+              "venue_id",
+              "dish_id",
+              "reference_window_id",
+              "target_window_id",
+              "demand_proxy_portions",
+              "planned_supply_portions",
+              "shortage_portions",
+              "feasible_extra_portions",
+              "uncovered_portions",
+              "ingredient_review_portions",
+              "evidence_codes"
+            ],
+            "title": "OpsAnalysis",
+            "type": "object"
+          },
+          "OpsProposal": {
+            "additionalProperties": false,
+            "properties": {
+              "proposal_id": {
+                "maxLength": 64,
+                "minLength": 1,
+                "pattern": "^[A-Za-z0-9._-]+$",
+                "title": "Proposal Id",
+                "type": "string"
+              },
+              "run_id": {
+                "maxLength": 64,
+                "minLength": 1,
+                "pattern": "^[A-Za-z0-9._-]+$",
+                "title": "Run Id",
+                "type": "string"
+              },
+              "venue_id": {
+                "maxLength": 64,
+                "minLength": 1,
+                "pattern": "^[A-Za-z0-9._-]+$",
+                "title": "Venue Id",
+                "type": "string"
+              },
+              "dish_id": {
+                "maxLength": 64,
+                "minLength": 1,
+                "pattern": "^[A-Za-z0-9._-]+$",
+                "title": "Dish Id",
+                "type": "string"
+              },
+              "reference_window_id": {
+                "maxLength": 64,
+                "minLength": 1,
+                "pattern": "^[A-Za-z0-9._-]+$",
+                "title": "Reference Window Id",
+                "type": "string"
+              },
+              "target_window_id": {
+                "maxLength": 64,
+                "minLength": 1,
+                "pattern": "^[A-Za-z0-9._-]+$",
+                "title": "Target Window Id",
+                "type": "string"
+              },
+              "based_on_snapshot_id": {
+                "maxLength": 64,
+                "minLength": 1,
+                "pattern": "^[A-Za-z0-9._-]+$",
+                "title": "Based On Snapshot Id",
+                "type": "string"
+              },
+              "signals_revision": {
+                "maximum": 9223372036854775807,
+                "minimum": 0,
+                "title": "Signals Revision",
+                "type": "integer"
+              },
+              "expected_effective_at": {
+                "format": "date-time",
+                "title": "Expected Effective At",
+                "type": "string"
+              },
+              "demand_proxy_portions": {
+                "maximum": 9223372036854775807,
+                "minimum": 0,
+                "title": "Demand Proxy Portions",
+                "type": "integer"
+              },
+              "planned_supply_portions": {
+                "maximum": 9223372036854775807,
+                "minimum": 0,
+                "title": "Planned Supply Portions",
+                "type": "integer"
+              },
+              "shortage_portions": {
+                "maximum": 9223372036854775807,
+                "minimum": 0,
+                "title": "Shortage Portions",
+                "type": "integer"
+              },
+              "proposed_extra_portions": {
+                "maximum": 9223372036854775807,
+                "minimum": 1,
+                "title": "Proposed Extra Portions",
+                "type": "integer"
+              },
+              "uncovered_portions": {
+                "maximum": 9223372036854775807,
+                "minimum": 0,
+                "title": "Uncovered Portions",
+                "type": "integer"
+              },
+              "evidence_codes": {
+                "items": {
+                  "enum": [
+                    "DEMAND_FROM_PREFERENCE",
+                    "DEMAND_FROM_INTENT",
+                    "DEMAND_FROM_SELF_REPORT",
+                    "INSUFFICIENT_SIGNAL",
+                    "DISH_CAPACITY_LIMIT",
+                    "PREP_CAPACITY_LIMIT",
+                    "INGREDIENT_LIMIT"
+                  ],
+                  "type": "string"
+                },
+                "title": "Evidence Codes",
+                "type": "array"
+              },
+              "status": {
+                "enum": [
+                  "PROPOSED",
+                  "CONFIRMED",
+                  "APPLIED",
+                  "STALE"
+                ],
+                "title": "Status",
+                "type": "string"
+              }
+            },
+            "required": [
+              "proposal_id",
+              "run_id",
+              "venue_id",
+              "dish_id",
+              "reference_window_id",
+              "target_window_id",
+              "based_on_snapshot_id",
+              "signals_revision",
+              "expected_effective_at",
+              "demand_proxy_portions",
+              "planned_supply_portions",
+              "shortage_portions",
+              "proposed_extra_portions",
+              "uncovered_portions",
+              "evidence_codes",
+              "status"
+            ],
+            "title": "OpsProposal",
+            "type": "object"
+          },
+          "SnapshotRef": {
+            "additionalProperties": false,
+            "properties": {
+              "run_id": {
+                "maxLength": 64,
+                "minLength": 1,
+                "pattern": "^[A-Za-z0-9._-]+$",
+                "title": "Run Id",
+                "type": "string"
+              },
+              "snapshot_id": {
+                "maxLength": 64,
+                "minLength": 1,
+                "pattern": "^[A-Za-z0-9._-]+$",
+                "title": "Snapshot Id",
+                "type": "string"
+              },
+              "revision": {
+                "maximum": 9223372036854775807,
+                "minimum": 1,
+                "title": "Revision",
+                "type": "integer"
+              },
+              "clock_at": {
+                "format": "date-time",
+                "title": "Clock At",
+                "type": "string"
+              },
+              "data_mode": {
+                "enum": [
+                  "SIMULATION",
+                  "LIVE"
+                ],
+                "title": "Data Mode",
+                "type": "string"
+              },
+              "catalog_version": {
+                "maxLength": 64,
+                "minLength": 1,
+                "pattern": "^[A-Za-z0-9._-]+$",
+                "title": "Catalog Version",
+                "type": "string"
+              },
+              "schema_version": {
+                "const": "0.3",
+                "default": "0.3",
+                "title": "Schema Version",
+                "type": "string"
+              }
+            },
+            "required": [
+              "run_id",
+              "snapshot_id",
+              "revision",
+              "clock_at",
+              "data_mode",
+              "catalog_version",
+              "schema_version"
+            ],
+            "title": "SnapshotRef",
+            "type": "object"
+          }
+        },
+        "oneOf": [
+          {
+            "type": "object",
+            "properties": {
+              "schema_version": {
+                "const": "0.3"
+              },
+              "ok": {
+                "const": true
+              },
+              "data_mode": {
+                "const": "SIMULATION"
+              },
+              "snapshot": {
+                "$ref": "#/$defs/SnapshotRef"
+              },
+              "data": {
+                "additionalProperties": false,
+                "properties": {
+                  "signals_revision": {
+                    "maximum": 9223372036854775807,
+                    "minimum": 0,
+                    "title": "Signals Revision",
+                    "type": "integer"
+                  },
+                  "analyses": {
+                    "items": {
+                      "$ref": "#/$defs/OpsAnalysis"
+                    },
+                    "title": "Analyses",
+                    "type": "array"
+                  },
+                  "proposals": {
+                    "items": {
+                      "$ref": "#/$defs/OpsProposal"
+                    },
+                    "title": "Proposals",
+                    "type": "array"
+                  }
+                },
+                "required": [
+                  "signals_revision",
+                  "analyses",
+                  "proposals"
+                ],
+                "title": "OpsReport",
+                "type": "object"
+              }
+            },
+            "required": [
+              "schema_version",
+              "ok",
+              "data_mode",
+              "snapshot",
+              "data"
+            ],
+            "additionalProperties": false
+          },
+          {
+            "type": "object",
+            "properties": {
+              "schema_version": {
+                "const": "0.3"
+              },
+              "ok": {
+                "const": false
+              },
+              "data_mode": {
+                "anyOf": [
+                  {
+                    "const": "SIMULATION"
+                  },
+                  {
+                    "type": "null"
+                  }
+                ]
+              },
+              "snapshot": {
+                "anyOf": [
+                  {
+                    "$ref": "#/$defs/SnapshotRef"
+                  },
+                  {
+                    "type": "null"
+                  }
+                ]
+              },
+              "error": {
+                "type": "object",
+                "properties": {
+                  "code": {
+                    "enum": [
+                      "INVALID_INPUT",
+                      "UNAUTHENTICATED",
+                      "FORBIDDEN",
+                      "CONFIRMATION_REQUIRED",
+                      "MODE_DISABLED",
+                      "NOT_FOUND",
+                      "RUN_REPLACED",
+                      "STALE_SELECTION",
+                      "SNAPSHOT_CONFLICT",
+                      "STALE_PROPOSAL",
+                      "OPS_ALREADY_CONFIRMED",
+                      "IDEMPOTENCY_CONFLICT",
+                      "RATE_LIMITED",
+                      "DEPENDENCY_UNAVAILABLE",
+                      "INTERNAL_ERROR"
+                    ]
+                  },
+                  "message": {
+                    "type": "string"
+                  },
+                  "retryable": {
+                    "type": "boolean"
+                  },
+                  "details": {
+                    "type": "object"
+                  }
+                },
+                "required": [
+                  "code",
+                  "message",
+                  "retryable"
+                ],
+                "additionalProperties": false,
+                "allOf": [
+                  {
+                    "if": {
+                      "properties": {
+                        "code": {
+                          "const": "INVALID_INPUT"
+                        }
+                      }
+                    },
+                    "then": {
+                      "properties": {
+                        "details": {
+                          "type": "object",
+                          "properties": {
+                            "field": {
+                              "type": "string"
+                            }
+                          },
+                          "required": [
+                            "field"
+                          ],
+                          "additionalProperties": false
+                        }
+                      }
+                    }
+                  },
+                  {
+                    "if": {
+                      "properties": {
+                        "code": {
+                          "const": "RATE_LIMITED"
+                        }
+                      }
+                    },
+                    "then": {
+                      "properties": {
+                        "details": {
+                          "type": "object",
+                          "properties": {
+                            "retry_after_seconds": {
+                              "type": "integer",
+                              "minimum": 1
+                            }
+                          },
+                          "required": [
+                            "retry_after_seconds"
+                          ],
+                          "additionalProperties": false
+                        }
+                      }
+                    }
+                  },
+                  {
+                    "if": {
+                      "properties": {
+                        "code": {
+                          "const": "INTERNAL_ERROR"
+                        }
+                      }
+                    },
+                    "then": {
+                      "properties": {
+                        "details": {
+                          "type": "object",
+                          "properties": {
+                            "trace_id": {
+                              "type": "string",
+                              "pattern": "^[A-Za-z0-9._-]{1,64}$"
+                            }
+                          },
+                          "required": [
+                            "trace_id"
+                          ],
+                          "additionalProperties": false
+                        }
+                      }
+                    }
+                  },
+                  {
+                    "if": {
+                      "properties": {
+                        "code": {
+                          "not": {
+                            "enum": [
+                              "INVALID_INPUT",
+                              "RATE_LIMITED",
+                              "INTERNAL_ERROR"
+                            ]
+                          }
+                        }
+                      }
+                    },
+                    "then": {
+                      "not": {
+                        "required": [
+                          "details"
+                        ]
+                      }
+                    }
+                  }
+                ]
+              }
+            },
+            "required": [
+              "schema_version",
+              "ok",
+              "data_mode",
+              "snapshot",
+              "error"
+            ],
+            "additionalProperties": false
+          }
+        ]
+      }
+    },
+    {
+      "name": "confirm_ops_action",
+      "description": "Reserve simulated supply using an operator's Web receipt.",
+      "inputSchema": {
+        "additionalProperties": false,
+        "properties": {
+          "run_id": {
+            "maxLength": 64,
+            "minLength": 1,
+            "pattern": "^[A-Za-z0-9._-]+$",
+            "title": "Run Id",
+            "type": "string"
+          },
+          "proposal_id": {
+            "maxLength": 64,
+            "minLength": 1,
+            "pattern": "^[A-Za-z0-9._-]+$",
+            "title": "Proposal Id",
+            "type": "string"
+          },
+          "approved_extra_portions": {
+            "maximum": 9223372036854775807,
+            "minimum": 1,
+            "title": "Approved Extra Portions",
+            "type": "integer"
+          },
+          "expected_snapshot_id": {
+            "maxLength": 64,
+            "minLength": 1,
+            "pattern": "^[A-Za-z0-9._-]+$",
+            "title": "Expected Snapshot Id",
+            "type": "string"
+          },
+          "idempotency_key": {
+            "maxLength": 128,
+            "minLength": 8,
+            "pattern": "^[!-~]+$",
+            "title": "Idempotency Key",
+            "type": "string"
+          },
+          "interaction_receipt": {
+            "pattern": "^[A-Za-z0-9_-]{16,512}$",
+            "title": "Interaction Receipt",
+            "type": "string"
+          }
+        },
+        "required": [
+          "run_id",
+          "proposal_id",
+          "approved_extra_portions",
+          "expected_snapshot_id",
+          "idempotency_key",
+          "interaction_receipt"
+        ],
+        "title": "ConfirmationWithReceipt",
+        "type": "object"
+      },
+      "outputSchema": {
+        "type": "object",
+        "$defs": {
+          "SnapshotRef": {
+            "additionalProperties": false,
+            "properties": {
+              "run_id": {
+                "maxLength": 64,
+                "minLength": 1,
+                "pattern": "^[A-Za-z0-9._-]+$",
+                "title": "Run Id",
+                "type": "string"
+              },
+              "snapshot_id": {
+                "maxLength": 64,
+                "minLength": 1,
+                "pattern": "^[A-Za-z0-9._-]+$",
+                "title": "Snapshot Id",
+                "type": "string"
+              },
+              "revision": {
+                "maximum": 9223372036854775807,
+                "minimum": 1,
+                "title": "Revision",
+                "type": "integer"
+              },
+              "clock_at": {
+                "format": "date-time",
+                "title": "Clock At",
+                "type": "string"
+              },
+              "data_mode": {
+                "enum": [
+                  "SIMULATION",
+                  "LIVE"
+                ],
+                "title": "Data Mode",
+                "type": "string"
+              },
+              "catalog_version": {
+                "maxLength": 64,
+                "minLength": 1,
+                "pattern": "^[A-Za-z0-9._-]+$",
+                "title": "Catalog Version",
+                "type": "string"
+              },
+              "schema_version": {
+                "const": "0.3",
+                "default": "0.3",
+                "title": "Schema Version",
+                "type": "string"
+              }
+            },
+            "required": [
+              "run_id",
+              "snapshot_id",
+              "revision",
+              "clock_at",
+              "data_mode",
+              "catalog_version",
+              "schema_version"
+            ],
+            "title": "SnapshotRef",
+            "type": "object"
+          }
+        },
+        "oneOf": [
+          {
+            "type": "object",
+            "properties": {
+              "schema_version": {
+                "const": "0.3"
+              },
+              "ok": {
+                "const": true
+              },
+              "data_mode": {
+                "const": "SIMULATION"
+              },
+              "snapshot": {
+                "$ref": "#/$defs/SnapshotRef"
+              },
+              "data": {
+                "additionalProperties": false,
+                "properties": {
+                  "proposal_id": {
+                    "maxLength": 64,
+                    "minLength": 1,
+                    "pattern": "^[A-Za-z0-9._-]+$",
+                    "title": "Proposal Id",
+                    "type": "string"
+                  },
+                  "approved_extra_portions": {
+                    "maximum": 9223372036854775807,
+                    "minimum": 1,
+                    "title": "Approved Extra Portions",
+                    "type": "integer"
+                  },
+                  "actor_id": {
+                    "maxLength": 64,
+                    "minLength": 1,
+                    "pattern": "^[A-Za-z0-9._-]+$",
+                    "title": "Actor Id",
+                    "type": "string"
+                  },
+                  "confirmed_at": {
+                    "format": "date-time",
+                    "title": "Confirmed At",
+                    "type": "string"
+                  },
+                  "confirmation_snapshot": {
+                    "$ref": "#/$defs/SnapshotRef"
+                  }
+                },
+                "required": [
+                  "proposal_id",
+                  "approved_extra_portions",
+                  "actor_id",
+                  "confirmed_at",
+                  "confirmation_snapshot"
+                ],
+                "title": "OpsConfirmation",
+                "type": "object"
+              }
+            },
+            "required": [
+              "schema_version",
+              "ok",
+              "data_mode",
+              "snapshot",
+              "data"
+            ],
+            "additionalProperties": false
+          },
+          {
+            "type": "object",
+            "properties": {
+              "schema_version": {
+                "const": "0.3"
+              },
+              "ok": {
+                "const": false
+              },
+              "data_mode": {
+                "anyOf": [
+                  {
+                    "const": "SIMULATION"
+                  },
+                  {
+                    "type": "null"
+                  }
+                ]
+              },
+              "snapshot": {
+                "anyOf": [
+                  {
+                    "$ref": "#/$defs/SnapshotRef"
+                  },
+                  {
+                    "type": "null"
+                  }
+                ]
+              },
+              "error": {
+                "type": "object",
+                "properties": {
+                  "code": {
+                    "enum": [
+                      "INVALID_INPUT",
+                      "UNAUTHENTICATED",
+                      "FORBIDDEN",
+                      "CONFIRMATION_REQUIRED",
+                      "MODE_DISABLED",
+                      "NOT_FOUND",
+                      "RUN_REPLACED",
+                      "STALE_SELECTION",
+                      "SNAPSHOT_CONFLICT",
+                      "STALE_PROPOSAL",
+                      "OPS_ALREADY_CONFIRMED",
+                      "IDEMPOTENCY_CONFLICT",
+                      "RATE_LIMITED",
+                      "DEPENDENCY_UNAVAILABLE",
+                      "INTERNAL_ERROR"
+                    ]
+                  },
+                  "message": {
+                    "type": "string"
+                  },
+                  "retryable": {
+                    "type": "boolean"
+                  },
+                  "details": {
+                    "type": "object"
+                  }
+                },
+                "required": [
+                  "code",
+                  "message",
+                  "retryable"
+                ],
+                "additionalProperties": false,
+                "allOf": [
+                  {
+                    "if": {
+                      "properties": {
+                        "code": {
+                          "const": "INVALID_INPUT"
+                        }
+                      }
+                    },
+                    "then": {
+                      "properties": {
+                        "details": {
+                          "type": "object",
+                          "properties": {
+                            "field": {
+                              "type": "string"
+                            }
+                          },
+                          "required": [
+                            "field"
+                          ],
+                          "additionalProperties": false
+                        }
+                      }
+                    }
+                  },
+                  {
+                    "if": {
+                      "properties": {
+                        "code": {
+                          "const": "RATE_LIMITED"
+                        }
+                      }
+                    },
+                    "then": {
+                      "properties": {
+                        "details": {
+                          "type": "object",
+                          "properties": {
+                            "retry_after_seconds": {
+                              "type": "integer",
+                              "minimum": 1
+                            }
+                          },
+                          "required": [
+                            "retry_after_seconds"
+                          ],
+                          "additionalProperties": false
+                        }
+                      }
+                    }
+                  },
+                  {
+                    "if": {
+                      "properties": {
+                        "code": {
+                          "const": "INTERNAL_ERROR"
+                        }
+                      }
+                    },
+                    "then": {
+                      "properties": {
+                        "details": {
+                          "type": "object",
+                          "properties": {
+                            "trace_id": {
+                              "type": "string",
+                              "pattern": "^[A-Za-z0-9._-]{1,64}$"
+                            }
+                          },
+                          "required": [
+                            "trace_id"
+                          ],
+                          "additionalProperties": false
+                        }
+                      }
+                    }
+                  },
+                  {
+                    "if": {
+                      "properties": {
+                        "code": {
+                          "not": {
+                            "enum": [
+                              "INVALID_INPUT",
+                              "RATE_LIMITED",
+                              "INTERNAL_ERROR"
+                            ]
+                          }
+                        }
+                      }
+                    },
+                    "then": {
+                      "not": {
+                        "required": [
+                          "details"
+                        ]
+                      }
+                    }
+                  }
+                ]
+              }
+            },
+            "required": [
+              "schema_version",
+              "ok",
+              "data_mode",
+              "snapshot",
+              "error"
+            ],
+            "additionalProperties": false
+          }
+        ]
+      }
+    }
+  ]
+}

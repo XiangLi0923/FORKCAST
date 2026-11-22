@@ -1,0 +1,25 @@
+FORKCAST V0.3 competition source ZIP verification
+2026-11-22, Windows, Python 3.12.10
+Source ZIP SHA-256: 3e20490575ad2318ed59c4f77f8dd3755415b4855e1ac004047644d2f7f83e01
+Isolation: extracted source ZIP, fresh temporary SQLite; original evidence unused.
+This is programmatic verification. E03 does not record a visible Edge human approval.
+
+CHECK tests.demand_http_smoke
+SIMULATION · 模拟运营数据 | 初始种子账 | W1 | P/I/A=4/5/3 | 鸡腿饭三渠道 SUPPRESSED/null | signals_revision=12 | observed_until=2026-11-21T11:40:00+08:00
+SIMULATION · 模拟运营数据 | DEMO 授权后选餐 | W1 | P/I/A=4/6/3 | 鸡腿饭三渠道 SUPPRESSED/null | signals_revision=13 | observed_until=2026-11-21T11:40:00+08:00
+SIMULATION · 模拟运营数据 | 撤回授权 | W1 | P/I/A=4/5/3 | 鸡腿饭三渠道 SUPPRESSED/null | signals_revision=14 | observed_until=2026-11-21T11:40:00+08:00
+SIMULATION · 模拟运营数据 | 重新授权且无新声明 | W1 | P/I/A=4/5/3 | 鸡腿饭三渠道 SUPPRESSED/null | signals_revision=14 | observed_until=2026-11-21T11:40:00+08:00
+PASS: OPS 读取、学生 401、撤回立即生效、推荐快照未变化。
+CHECK tests.execution_http_smoke
+E01 CONFIRMED PASS | W1 烤鸭 644→鸡腿，W2 烤鸭 555 / 鸡腿 383 | 库存 0→3 | 两条审计
+E01 CONTROL PASS | W2 鸡腿 383 | 烤鸭库存 0 | 无确认/生效审计
+SIMULATION · 模拟运营数据 | A06 旧会话被拒。两条路径均保持 1 条主动意向，无自动改写。
+CHECK tests.mcp_http_smoke
+E03-A PASS | EXTERNAL_AGENT 3 tools | 644/480 -> chicken; SOLD_OUT | foreign replan and write denied
+E03-B PASS | P/I/A=4/6/3 | receipt -> confirm 3 | W1 stock 0 | APPLIED at W2 stock 3 | 555/383
+E03-C / A07 PASS | same HTTP/MCP decision, aggregation, proposal, confirmation, history and W2 supply
+SIMULATION | MCP 2025-11-25 | SDK stdio processes closed
+HTTP 200 /
+HTTP 200 /ops
+HTTP 200 /api/v1/runs/current
+SOURCE ZIP CHECK PASS

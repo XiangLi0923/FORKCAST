@@ -1,0 +1,44 @@
+# Python and test tooling
+__pycache__/
+*.py[cod]
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+.coverage
+.coverage.*
+htmlcov/
+build/
+dist/
+*.egg-info/
+
+# Local environments and configuration
+.venv/
+venv/
+env/
+.env
+.env.*
+!.env.example
+*.local.*
+local-config/
+
+# Runtime data and logs
+*.sqlite
+*.sqlite-*
+*.sqlite3
+*.sqlite3-*
+*.db
+*.db-*
+*.log
+*.log.*
+logs/
+
+# Credentials
+secrets/
+*.pem
+*.key
+*.p12
+*.pfx
+
+# Separate Git metadata and prior delivery archive
+/.forkcast-git/
+/FORKCAST_V0.3_M1.zip
